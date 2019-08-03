@@ -1,8 +1,11 @@
-import * as functions from 'firebase-functions';
+import * as functions from "firebase-functions";
+import { dialogflow } from "actions-on-google";
 
-// // Start writing Firebase Functions
-// // https://firebase.google.com/docs/functions/typescript
-//
-// export const helloWorld = functions.https.onRequest((request, response) => {
-//  response.send("Hello from Firebase!");
-// });
+const app = dialogflow();
+
+app.intent("Default Welcome Intent", conv => {
+  console.log(conv);
+  conv.ask("Are you ok?");
+});
+
+exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
