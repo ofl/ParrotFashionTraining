@@ -20,11 +20,12 @@ type Conversation = DialogflowConversation<unknown, unknown, Contexts>;
 
 const SENTENCE_COLLECTION_PATH = "sentences";
 const THREE_DAYS_MS = 60 * 60 * 24 * 3 * 1000;
+const PASSING_LINE_PERCENTAGE = 70;
+
+firebase.initializeApp(functions.config().firebase);
 
 const app = dialogflow();
 const firestore = firebase.firestore();
-
-firebase.initializeApp(functions.config().firebase);
 
 // const exampleSentences: Sentence[] = [
 //   {
@@ -72,7 +73,20 @@ app.intent("Default Welcome Intent", async conv => {
   // TEST: delete
   // await deleteOldSentences(new Date().getTime() - 60 * 60 * 24 * 1 * 1000);
 
-  conv.ask("Are you ok?");
+  // TEST: compare original sentence and user reply
+  const originalSentence =
+    "The doctor used a lot of medical terms that I couldn’t understand.";
+  const userRepliedSentence =
+    "The teacher use a lot of technical word that we couldn not realize.";
+
+  if (
+    percentageOfSimilarity(originalSentence, userRepliedSentence) >=
+    PASSING_LINE_PERCENTAGE
+  ) {
+    conv.ask("That's ok");
+  } else {
+    conv.ask("That's not ok");
+  }
 });
 
 app.intent("Default Goodbye Intent", conv => {
@@ -156,6 +170,28 @@ function sentenceQuery(unixtime: number, opStr: WhereFilterOp = ">="): Query {
     .collection(SENTENCE_COLLECTION_PATH)
     .where("unixtime", opStr, unixtime)
     .orderBy("unixtime");
+}
+
+function percentageOfSimilarity(
+  originalSentence: string,
+  userRepliedSentence: string
+): number {
+  const orginalWords = new Set(sentenceToWordArray(originalSentence));
+  const userWords = new Set(sentenceToWordArray(userRepliedSentence));
+  const intersection = new Set([...orginalWords].filter(e => userWords.has(e)));
+
+  return Math.round((intersection.size / orginalWords.size) * 100);
+}
+
+function sentenceToWordArray(sentence: string): string[] {
+  const words = sentence.match(/\S+/g);
+  if (words === null) {
+    return [];
+  }
+
+  return words.map(word => {
+    return word.toLowerCase();
+  });
 }
 
 // ユーザーが「Voice Match でアカウントに基づく情報を受け取る」場合
