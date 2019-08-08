@@ -6,6 +6,11 @@ import {
   Contexts
 } from "actions-on-google";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
+import {
+  UserDataLoadError,
+  SentenceLoadError,
+  EmptyAnswerError
+} from "./errors";
 
 interface UserData {
   repeatCount?: number;
@@ -43,21 +48,8 @@ const firestore = firebase.firestore();
 //   }
 // ];
 
-app.intent("Default Welcome Intent", async conv => {
-  const userData = loadUserData(conv);
+app.intent("Default Welcome Intent", conv => {
   console.log("welcome");
-  console.log(userData.lastReadUnixtime);
-
-  // TEST: load;
-  if (typeof userData.lastReadUnixtime !== "undefined") {
-    const sentences = await loadSentence(
-      userData.lastReadUnixtime - THREE_DAYS_MS
-    );
-
-    if (sentences.length > 0) {
-      console.log(sentences[0].body);
-    }
-  }
 
   // TEST: count
   // if (typeof userData.lastReadUnixtime !== "undefined") {
@@ -74,18 +66,45 @@ app.intent("Default Welcome Intent", async conv => {
   // await deleteOldSentences(new Date().getTime() - 60 * 60 * 24 * 1 * 1000);
 
   // TEST: compare original sentence and user reply
-  const originalSentence =
-    "The doctor used a lot of medical terms that I couldn’t understand.";
-  const userRepliedSentence =
-    "The teacher use a lot of technical word that we couldn not realize.";
 
-  if (
-    percentageOfSimilarity(originalSentence, userRepliedSentence) >=
-    PASSING_LINE_PERCENTAGE
-  ) {
-    conv.ask("That's ok");
-  } else {
-    conv.ask("That's not ok");
+  conv.ask("Let's start");
+});
+
+app.intent("User Replied Intent", async (conv, { answer }) => {
+  try {
+    console.log("user replied");
+
+    const userData = loadUserData(conv);
+    if (typeof userData.lastReadUnixtime == "undefined") {
+      throw new UserDataLoadError("lastReadUnixtime not found");
+    }
+
+    const sentences = await loadSentence(
+      userData.lastReadUnixtime - THREE_DAYS_MS
+    );
+
+    let originalSentence: string;
+    if (sentences.length > 0) {
+      originalSentence = sentences[0].body;
+    } else {
+      throw new SentenceLoadError("Orignal sentence not found");
+    }
+
+    if (typeof answer !== "string") {
+      throw new EmptyAnswerError("User answer not found");
+    }
+
+    if (
+      percentageOfSimilarity(originalSentence, answer) >=
+      PASSING_LINE_PERCENTAGE
+    ) {
+      conv.ask("That's ok");
+    } else {
+      conv.ask("That's not ok");
+    }
+  } catch (error) {
+    console.error(error);
+    conv.close("Sorry, something is wrong. Closing application.");
   }
 });
 
