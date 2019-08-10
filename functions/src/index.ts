@@ -1,20 +1,10 @@
 import * as functions from "firebase-functions";
-import {
-  dialogflow,
-  DialogflowConversation,
-  Contexts
-} from "actions-on-google";
+import { dialogflow } from "actions-on-google";
 
 import Utils from "./utils";
 import Sentence from "./sentence";
-import { UserDataLoadError, EmptyAnswerError } from "./errors";
-
-interface UserData {
-  repeatCount?: number;
-  lastReadUnixtime?: number;
-}
-
-type Conversation = DialogflowConversation<unknown, unknown, Contexts>;
+import UserData from "./user_data";
+import { EmptyAnswerError } from "./errors";
 
 const THREE_DAYS_MS = 60 * 60 * 24 * 3 * 1000 * 10;
 const PASSING_LINE_PERCENTAGE = 70;
@@ -46,11 +36,7 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
   try {
     console.log("user replied");
 
-    const userData = loadUserData(conv);
-    if (typeof userData.lastReadUnixtime === "undefined") {
-      throw new UserDataLoadError("lastReadUnixtime not found");
-    }
-
+    const userData = UserData.load(conv);
     const originalSentence = await Sentence.loadSentence(
       userData.lastReadUnixtime - THREE_DAYS_MS
     );
@@ -58,6 +44,9 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     if (typeof answer !== "string") {
       throw new EmptyAnswerError("User answer not found");
     }
+
+    userData.retryCount++;
+    UserData.save(conv, userData);
 
     if (
       Utils.percentageOfSimilarity(originalSentence.body, answer) >=
@@ -78,24 +67,6 @@ app.intent("Default Goodbye Intent", conv => {
 
   conv.close("Goodbye.");
 });
-
-function loadUserData(conv: Conversation): UserData {
-  const data = conv.data as UserData;
-  if (
-    typeof data.repeatCount !== "undefined" &&
-    typeof data.lastReadUnixtime !== "undefined"
-  ) {
-    return data;
-  }
-
-  const userData: UserData = {
-    repeatCount: data.repeatCount || 0,
-    lastReadUnixtime: data.lastReadUnixtime || new Date().getTime()
-  };
-  conv.data = userData;
-
-  return userData;
-}
 
 // ユーザーが「Voice Match でアカウントに基づく情報を受け取る」場合
 // function loadUserDataFromStorage(conv: Conversation): UserData {
