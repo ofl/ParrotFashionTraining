@@ -8,7 +8,7 @@ firebase.initializeApp(functions.config().firebase);
 const firestore = firebase.firestore();
 const SENTENCE_COLLECTION_PATH = "sentences";
 
-class Sentence {
+export default class Sentence {
   readonly body: string;
   readonly unixtime: number;
 
@@ -97,5 +97,3 @@ class Sentence {
   //   await batch.commit();
   // }
 }
-
-export { Sentence };
