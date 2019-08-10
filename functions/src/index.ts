@@ -4,7 +4,9 @@ import {
   DialogflowConversation,
   Contexts
 } from "actions-on-google";
-import { Sentence } from "./sentence";
+
+import Utils from "./utils";
+import Sentence from "./sentence";
 import { UserDataLoadError, EmptyAnswerError } from "./errors";
 
 interface UserData {
@@ -58,7 +60,7 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     }
 
     if (
-      percentageOfSimilarity(originalSentence.body, answer) >=
+      Utils.percentageOfSimilarity(originalSentence.body, answer) >=
       PASSING_LINE_PERCENTAGE
     ) {
       conv.ask("That's ok");
@@ -93,28 +95,6 @@ function loadUserData(conv: Conversation): UserData {
   conv.data = userData;
 
   return userData;
-}
-
-function percentageOfSimilarity(
-  originalSentence: string,
-  userRepliedSentence: string
-): number {
-  const orginalWords = new Set(sentenceToWordArray(originalSentence));
-  const userWords = new Set(sentenceToWordArray(userRepliedSentence));
-  const intersection = new Set([...orginalWords].filter(e => userWords.has(e)));
-
-  return Math.round((intersection.size / orginalWords.size) * 100);
-}
-
-function sentenceToWordArray(sentence: string): string[] {
-  const words = sentence.match(/\S+/g);
-  if (words === null) {
-    return [];
-  }
-
-  return words.map(word => {
-    return word.toLowerCase();
-  });
 }
 
 // ユーザーが「Voice Match でアカウントに基づく情報を受け取る」場合
