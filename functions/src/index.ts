@@ -4,15 +4,16 @@ import { dialogflow } from "actions-on-google";
 import Utils from "./utils";
 import Sentence from "./sentence";
 import UserData from "./user_data";
+import { Conversation, LastResult } from "./interfaces";
 import { EmptyAnswerError } from "./errors";
 
 const app = dialogflow();
 const MAX_RETRY_COUNT = 2;
 const PASSING_LINE_PERCENTAGE = 70;
 
-app.intent("Default Welcome Intent", conv => {
+app.intent("Default Welcome Intent", async conv => {
   console.log("welcome");
-  conv.ask("Let's start");
+  await startPractice(conv);
 });
 
 app.intent("User Replied Intent", async (conv, { answer }) => {
@@ -27,27 +28,20 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     console.log(userData.retryCount);
 
     const originalSentence = await Sentence.load(userData.lastReadUnixtime);
+    const overMaxRetryCount = userData.retryCount >= MAX_RETRY_COUNT;
 
     if (
       Utils.percentageOfSimilarity(originalSentence.body, answer) >=
-        PASSING_LINE_PERCENTAGE ||
-      userData.retryCount >= MAX_RETRY_COUNT
+      PASSING_LINE_PERCENTAGE
     ) {
-      const message =
-        userData.retryCount >= MAX_RETRY_COUNT
-          ? "Try next sentence!."
-          : "Good job!. Try next sentence!.";
-      userData.retryCount = 0;
-
-      const newSentence = await Sentence.load(userData.lastReadUnixtime, true);
-      userData.lastReadUnixtime = newSentence.unixtime;
-
-      conv.ask(message + newSentence.body);
+      await startPractice(conv, LastResult.succeeded);
+    } else if (overMaxRetryCount) {
+      await startPractice(conv, LastResult.failed);
     } else {
       userData.retryCount++;
+      UserData.save(conv, userData);
       conv.ask("Try again!." + originalSentence.body);
     }
-    UserData.save(conv, userData);
   } catch (error) {
     console.error(error);
     conv.close("Sorry, something is wrong. Closing application.");
@@ -59,5 +53,34 @@ app.intent("Default Goodbye Intent", conv => {
 
   conv.close("Goodbye.");
 });
+
+const startPractice = async (
+  conv: Conversation,
+  lastResult?: LastResult
+): Promise<void> => {
+  const userData = UserData.load(conv);
+  userData.retryCount = 0;
+
+  const newSentence = await Sentence.load(userData.lastReadUnixtime, true);
+  userData.lastReadUnixtime = newSentence.unixtime;
+  UserData.save(conv, userData);
+
+  conv.ask(beforeNewSentenceMessage(lastResult) + newSentence.body);
+};
+
+const beforeNewSentenceMessage = (lastResult?: LastResult): string => {
+  if (typeof lastResult === "undefined") {
+    return "Let's start!.";
+  }
+
+  switch (lastResult) {
+    case 0:
+      // => succeeded
+      return "Good job!.";
+    default:
+      // => failed
+      return "Don't mind!.";
+  }
+};
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
