@@ -17,7 +17,7 @@ class SentenceLoadError extends ApplicationError {
 }
 
 class EmptyAnswerError extends ApplicationError {
-  public name = "SentenceLoadError";
+  public name = "EmptyAnswerError";
 }
 
 export { UserDataLoadError, SentenceLoadError, EmptyAnswerError };
