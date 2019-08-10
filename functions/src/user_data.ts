@@ -1,7 +1,5 @@
-import { DialogflowConversation, Contexts } from "actions-on-google";
 import Utils from "./utils";
-
-type Conversation = DialogflowConversation<unknown, unknown, Contexts>;
+import { Conversation } from "./interfaces";
 
 export default class UserData {
   retryCount: number;
