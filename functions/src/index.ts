@@ -1,36 +1,23 @@
 import * as functions from "firebase-functions";
-import * as firebase from "firebase-admin";
 import {
   dialogflow,
   DialogflowConversation,
   Contexts
 } from "actions-on-google";
-import { WhereFilterOp, Query } from "@google-cloud/firestore";
-import {
-  UserDataLoadError,
-  SentenceLoadError,
-  EmptyAnswerError
-} from "./errors";
+import { Sentence } from "./sentence";
+import { UserDataLoadError, EmptyAnswerError } from "./errors";
 
 interface UserData {
   repeatCount?: number;
   lastReadUnixtime?: number;
 }
-interface Sentence {
-  body: string;
-  unixtime: number;
-}
 
 type Conversation = DialogflowConversation<unknown, unknown, Contexts>;
 
-const SENTENCE_COLLECTION_PATH = "sentences";
-const THREE_DAYS_MS = 60 * 60 * 24 * 3 * 1000;
+const THREE_DAYS_MS = 60 * 60 * 24 * 3 * 1000 * 10;
 const PASSING_LINE_PERCENTAGE = 70;
 
-firebase.initializeApp(functions.config().firebase);
-
 const app = dialogflow();
-const firestore = firebase.firestore();
 
 // const exampleSentences: Sentence[] = [
 //   {
@@ -50,23 +37,6 @@ const firestore = firebase.firestore();
 
 app.intent("Default Welcome Intent", conv => {
   console.log("welcome");
-
-  // TEST: count
-  // if (typeof userData.lastReadUnixtime !== "undefined") {
-  //   const count = await sentenceCount(
-  //     userData.lastReadUnixtime - THREE_DAYS_MS
-  //   );
-  //   console.log(count);
-  // }
-
-  // TEST: create
-  // await createSentences(exampleSentences);
-
-  // TEST: delete
-  // await deleteOldSentences(new Date().getTime() - 60 * 60 * 24 * 1 * 1000);
-
-  // TEST: compare original sentence and user reply
-
   conv.ask("Let's start");
 });
 
@@ -75,27 +45,20 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     console.log("user replied");
 
     const userData = loadUserData(conv);
-    if (typeof userData.lastReadUnixtime == "undefined") {
+    if (typeof userData.lastReadUnixtime === "undefined") {
       throw new UserDataLoadError("lastReadUnixtime not found");
     }
 
-    const sentences = await loadSentence(
+    const originalSentence = await Sentence.loadSentence(
       userData.lastReadUnixtime - THREE_DAYS_MS
     );
-
-    let originalSentence: string;
-    if (sentences.length > 0) {
-      originalSentence = sentences[0].body;
-    } else {
-      throw new SentenceLoadError("Orignal sentence not found");
-    }
 
     if (typeof answer !== "string") {
       throw new EmptyAnswerError("User answer not found");
     }
 
     if (
-      percentageOfSimilarity(originalSentence, answer) >=
+      percentageOfSimilarity(originalSentence.body, answer) >=
       PASSING_LINE_PERCENTAGE
     ) {
       conv.ask("That's ok");
@@ -130,65 +93,6 @@ function loadUserData(conv: Conversation): UserData {
   conv.data = userData;
 
   return userData;
-}
-
-async function loadSentence(unixtime: number): Promise<Sentence[]> {
-  const snapshot = await sentenceQuery(unixtime)
-    .limit(1)
-    .get();
-
-  return snapshot.docs.map(doc => {
-    return doc.data() as Sentence;
-  });
-}
-
-// async function sentenceCount(unixtime: number): Promise<number> {
-//   const snapshot = await sentenceQuery(unixtime).get();
-
-//   return snapshot.size;
-// }
-
-// async function createSentences(data: Sentence[]): Promise<void> {
-//   if (data.length === 0) {
-//     return;
-//   }
-
-//   const batch = firestore.batch();
-
-//   data.forEach(sentenceData => {
-//     batch.set(
-//       firestore.collection(SENTENCE_COLLECTION_PATH).doc(),
-//       sentenceData
-//     );
-//   });
-
-//   await batch.commit();
-// }
-
-// async function deleteOldSentences(
-//   unixtime: number = new Date().getTime() - THREE_DAYS_MS
-// ): Promise<void> {
-//   const snapshot = await sentenceQuery(unixtime, "<").get();
-
-//   if (snapshot.size === 0) {
-//     console.log("nothing to delete");
-//     return;
-//   }
-
-//   const batch = firestore.batch();
-
-//   snapshot.docs.forEach(doc => {
-//     batch.delete(doc.ref);
-//   });
-
-//   await batch.commit();
-// }
-
-function sentenceQuery(unixtime: number, opStr: WhereFilterOp = ">="): Query {
-  return firestore
-    .collection(SENTENCE_COLLECTION_PATH)
-    .where("unixtime", opStr, unixtime)
-    .orderBy("unixtime");
 }
 
 function percentageOfSimilarity(

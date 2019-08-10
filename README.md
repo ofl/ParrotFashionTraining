@@ -1,2 +1,3 @@
 # PleaseRepeatAfterMe
-English training app
+
+English hearing and speaking training app for Google Home.
