@@ -11,22 +11,6 @@ const PASSING_LINE_PERCENTAGE = 70;
 
 const app = dialogflow();
 
-// const exampleSentences: Sentence[] = [
-//   {
-//     body:
-//       "1. The doctor used a lot of medical terms that I couldn’t understand.",
-//     unixtime: new Date().getTime()
-//   },
-//   {
-//     body: "2. Could you repeat that last sentence?",
-//     unixtime: new Date().getTime()
-//   },
-//   {
-//     body: "There was a mistake in the second sentence 2.",
-//     unixtime: new Date().getTime()
-//   }
-// ];
-
 app.intent("Default Welcome Intent", conv => {
   console.log("welcome");
   conv.ask("Let's start");
@@ -37,7 +21,7 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     console.log("user replied");
 
     const userData = UserData.load(conv);
-    const originalSentence = await Sentence.loadSentence(
+    const originalSentence = await Sentence.load(
       userData.lastReadUnixtime - THREE_DAYS_MS
     );
 

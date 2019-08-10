@@ -1,3 +1,19 @@
+// const exampleSentenceData = [
+//   {
+//     body:
+//       "1. The doctor used a lot of medical terms that I couldn’t understand.",
+//     unixtime: new Date().getTime()
+//   },
+//   {
+//     body: "2. Could you repeat that last sentence?",
+//     unixtime: new Date().getTime()
+//   },
+//   {
+//     body: "There was a mistake in the second sentence 2.",
+//     unixtime: new Date().getTime()
+//   }
+// ];
+
 import * as functions from "firebase-functions";
 import * as firebase from "firebase-admin";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
@@ -17,11 +33,11 @@ export default class Sentence {
     this.unixtime = unixtime;
   }
 
-  static async loadSentence(
+  static async load(
     unixtime: number,
     loadNext: boolean = false
   ): Promise<Sentence> {
-    const sentences = await this.loadSentenceList(unixtime, loadNext);
+    const sentences = await this.loadList(unixtime, loadNext);
 
     if (sentences.length > 0) {
       return sentences[0];
@@ -30,7 +46,7 @@ export default class Sentence {
     }
   }
 
-  private static async loadSentenceList(
+  private static async loadList(
     unixtime: number,
     loadNext: boolean = false
   ): Promise<Sentence[]> {
@@ -41,7 +57,7 @@ export default class Sentence {
 
     return snapshot.docs.map(doc => {
       const data = doc.data();
-      return new Sentence(data.body, data.unixtime);
+      return new this(data.body, data.unixtime);
     });
   }
 
