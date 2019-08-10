@@ -6,10 +6,9 @@ import Sentence from "./sentence";
 import UserData from "./user_data";
 import { EmptyAnswerError } from "./errors";
 
-const THREE_DAYS_MS = 60 * 60 * 24 * 3 * 1000 * 10;
-const PASSING_LINE_PERCENTAGE = 70;
-
 const app = dialogflow();
+const MAX_RETRY_COUNT = 2;
+const PASSING_LINE_PERCENTAGE = 70;
 
 app.intent("Default Welcome Intent", conv => {
   console.log("welcome");
@@ -20,26 +19,35 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
   try {
     console.log("user replied");
 
-    const userData = UserData.load(conv);
-    const originalSentence = await Sentence.load(
-      userData.lastReadUnixtime - THREE_DAYS_MS
-    );
-
     if (typeof answer !== "string") {
       throw new EmptyAnswerError("User answer not found");
     }
 
-    userData.retryCount++;
-    UserData.save(conv, userData);
+    const userData = UserData.load(conv);
+    console.log(userData.retryCount);
+
+    const originalSentence = await Sentence.load(userData.lastReadUnixtime);
 
     if (
       Utils.percentageOfSimilarity(originalSentence.body, answer) >=
-      PASSING_LINE_PERCENTAGE
+        PASSING_LINE_PERCENTAGE ||
+      userData.retryCount >= MAX_RETRY_COUNT
     ) {
-      conv.ask("That's ok");
+      const message =
+        userData.retryCount >= MAX_RETRY_COUNT
+          ? "Try next sentence!."
+          : "Good job!. Try next sentence!.";
+      userData.retryCount = 0;
+
+      const newSentence = await Sentence.load(userData.lastReadUnixtime, true);
+      userData.lastReadUnixtime = newSentence.unixtime;
+
+      conv.ask(message + newSentence.body);
     } else {
-      conv.ask("That's not ok");
+      userData.retryCount++;
+      conv.ask("Try again!." + originalSentence.body);
     }
+    UserData.save(conv, userData);
   } catch (error) {
     console.error(error);
     conv.close("Sorry, something is wrong. Closing application.");
@@ -51,24 +59,5 @@ app.intent("Default Goodbye Intent", conv => {
 
   conv.close("Goodbye.");
 });
-
-// ユーザーが「Voice Match でアカウントに基づく情報を受け取る」場合
-// function loadUserDataFromStorage(conv: Conversation): UserData {
-//   const storage = conv.user.storage as UserData;
-//   if (
-//     typeof storage.repeatCount !== "undefined" &&
-//     typeof storage.lastReadUnixtime !== "undefined"
-//   ) {
-//     return storage;
-//   }
-
-//   const userData: UserData = {
-//     repeatCount: storage.repeatCount || 0,
-//     lastReadUnixtime: storage.lastReadUnixtime || new Date().getTime()
-//   };
-//   conv.user.storage = userData;
-
-//   return userData;
-// }
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
