@@ -38,8 +38,7 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     } else if (overMaxRetryCount) {
       await startPractice(conv, LastResult.failed);
     } else {
-      userData.retryCount++;
-      UserData.save(conv, userData);
+      userData.incrementRetryCount();
       conv.ask("Try again!." + originalSentence.body);
     }
   } catch (error) {
@@ -59,11 +58,8 @@ const startPractice = async (
   lastResult?: LastResult
 ): Promise<void> => {
   const userData = UserData.load(conv);
-  userData.retryCount = 0;
-
   const newSentence = await Sentence.load(userData.lastReadUnixtime, true);
-  userData.lastReadUnixtime = newSentence.unixtime;
-  UserData.save(conv, userData);
+  userData.reset(newSentence.unixtime);
 
   conv.ask(beforeNewSentenceMessage(lastResult) + newSentence.body);
 };
