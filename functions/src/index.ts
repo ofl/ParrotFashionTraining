@@ -47,6 +47,12 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
   }
 });
 
+app.intent("Skip Sentence Intent", async conv => {
+  console.log("skipped");
+
+  await startPractice(conv, LastResult.skipped);
+});
+
 app.intent("Default Goodbye Intent", conv => {
   console.log("goodbye");
 
@@ -73,9 +79,12 @@ const beforeNewSentenceMessage = (lastResult?: LastResult): string => {
     case 0:
       // => succeeded
       return "Good job!.";
-    default:
+    case 1:
       // => failed
       return "Don't mind!.";
+    default:
+      // => skipped
+      return "All right. Let's start next sentence!.";
   }
 };
 

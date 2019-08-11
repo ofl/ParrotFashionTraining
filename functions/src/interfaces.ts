@@ -4,7 +4,8 @@ type Conversation = DialogflowConversation<unknown, unknown, Contexts>;
 
 enum LastResult {
   succeeded,
-  failed
+  failed,
+  skipped
 }
 
 export { Conversation, LastResult };
