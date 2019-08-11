@@ -2,31 +2,56 @@ import Utils from "./utils";
 import { Conversation } from "./interfaces";
 
 export default class UserData {
+  private static instance: UserData;
+
+  private conv: Conversation;
   retryCount: number;
   lastReadUnixtime: number;
 
-  constructor(retryCount: number, lastReadUnixtime: number) {
+  private constructor(
+    conv: Conversation,
+    retryCount: number,
+    lastReadUnixtime: number
+  ) {
+    this.conv = conv;
     this.retryCount = retryCount;
     this.lastReadUnixtime = lastReadUnixtime;
   }
 
-  static load(conv: Conversation): UserData {
-    const data = conv.data as { retryCount: number; lastReadUnixtime: number };
-    const oneDayBefore = Utils.oneDayBeforeNow();
+  static load(conv: Conversation) {
+    if (!this.instance) {
+      const data = conv.data as {
+        retryCount: number;
+        lastReadUnixtime: number;
+      };
+      const oneDayBefore = Utils.oneDayBeforeNow();
 
-    const unixtime =
-      data.lastReadUnixtime && data.lastReadUnixtime > oneDayBefore
-        ? data.lastReadUnixtime
-        : oneDayBefore;
+      const unixtime =
+        data.lastReadUnixtime && data.lastReadUnixtime > oneDayBefore
+          ? data.lastReadUnixtime
+          : oneDayBefore;
 
-    return new this(data.retryCount || 0, unixtime);
+      this.instance = new this(conv, data.retryCount || 0, unixtime);
+    }
+    return this.instance;
   }
 
-  static save(conv: Conversation, userData: UserData) {
-    conv.data = {
-      retryCount: userData.retryCount,
-      lastReadUnixtime: userData.lastReadUnixtime
+  save() {
+    this.conv.data = {
+      retryCount: this.retryCount,
+      lastReadUnixtime: this.lastReadUnixtime
     };
+  }
+
+  incrementRetryCount() {
+    this.retryCount++;
+    this.save();
+  }
+
+  reset(unixtime: number) {
+    this.retryCount = 0;
+    this.lastReadUnixtime = unixtime;
+    this.save();
   }
 }
 
