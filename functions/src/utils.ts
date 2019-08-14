@@ -1,3 +1,5 @@
+const Tokenizer = require("sentence-tokenizer");
+
 export default class Utils {
   static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
     return new Date().getTime() - 60 * 60 * 24 * 1000 * days;
@@ -25,5 +27,12 @@ export default class Utils {
     return words.map(word => {
       return word.toLowerCase();
     });
+  }
+
+  static textToSentences(text: string): string[] {
+    const tokenizer = new Tokenizer("Chuck");
+    tokenizer.setEntry(text);
+
+    return tokenizer.getSentences();
   }
 }
