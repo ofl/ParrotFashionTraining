@@ -1,8 +1,6 @@
 export default class Utils {
-  private static ONE_DAY_MS = 60 * 60 * 24 * 1000;
-
-  static oneDayBeforeNow(): number {
-    return new Date().getTime() - this.ONE_DAY_MS;
+  static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
+    return new Date().getTime() - 60 * 60 * 24 * 1000 * days;
   }
 
   static percentageOfSimilarity(

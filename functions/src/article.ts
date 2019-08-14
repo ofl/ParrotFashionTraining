@@ -1,4 +1,5 @@
 import * as firebase from "firebase-admin";
+import { WhereFilterOp, Query } from "@google-cloud/firestore";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
@@ -35,6 +36,25 @@ export default class Article {
     });
 
     await batch.commit();
+  }
+
+  static async batchDelete(
+    snapshot: FirebaseFirestore.QuerySnapshot
+  ): Promise<void> {
+    const batch = firestore.batch();
+
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+  }
+
+  static getQuery(unixtime: number, opStr: WhereFilterOp = ">="): Query {
+    return firestore
+      .collection(ARTICLE_COLLECTION_PATH)
+      .where("unixtime", opStr, unixtime)
+      .orderBy("unixtime");
   }
 
   private static md5hex(str: string) {

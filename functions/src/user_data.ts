@@ -24,7 +24,7 @@ export default class UserData {
         retryCount: number;
         lastReadUnixtime: number;
       };
-      const oneDayBefore = Utils.oneDayBeforeNow();
+      const oneDayBefore = Utils.getUnixtimeOfDaysBeforeNow(1);
 
       const unixtime =
         data.lastReadUnixtime && data.lastReadUnixtime > oneDayBefore
