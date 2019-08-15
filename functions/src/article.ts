@@ -1,5 +1,6 @@
 import * as firebase from "firebase-admin";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
+import Utils from "./utils";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
@@ -8,7 +9,7 @@ const crypto = require("crypto");
 export default class Article {
   guid: string;
   title: string;
-  body: string;
+  sentences: string[];
   unixtime: number;
 
   constructor(
@@ -19,7 +20,7 @@ export default class Article {
   ) {
     this.guid = guid;
     this.title = title;
-    this.body = contentSnippet;
+    this.sentences = Utils.textToSentences(contentSnippet);
     this.unixtime = new Date(isoDate).getTime();
   }
 
@@ -66,7 +67,7 @@ export default class Article {
     return {
       guid: this.guid,
       title: this.title,
-      body: this.body,
+      sentences: this.sentences,
       unixtime: this.unixtime
     };
   }
