@@ -1,56 +1,108 @@
 import * as functions from "firebase-functions";
+import * as firebase from "firebase-admin";
+firebase.initializeApp();
+
 import { dialogflow } from "actions-on-google";
 
 import Utils from "./utils";
-import Sentence from "./sentence";
+import Article from "./article";
 import UserData from "./user_data";
-import { Conversation, LastResult } from "./interfaces";
-import { EmptyAnswerError } from "./errors";
+// import Batch from "./batch";
+import { LastResult } from "./interfaces";
+import {
+  CurrentSentenceNotFound,
+  ArticleNotFound,
+  AvailableArticleNotExist
+} from "./errors";
 
 const app = dialogflow();
 const MAX_RETRY_COUNT = 2;
 const PASSING_LINE_PERCENTAGE = 70;
 
 app.intent("Default Welcome Intent", async conv => {
-  console.log("welcome");
-  await startPractice(conv);
+  try {
+    console.log("welcome");
+
+    const userData = UserData.load(conv);
+    const nextSentence = await getNextSentence(userData);
+
+    conv.ask(beforeNewSentenceMessage() + nextSentence);
+
+    // await Batch.createArticlesFromRSS();
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof AvailableArticleNotExist) {
+      conv.close("Sorry, available practice is not exist. Please try later.");
+      return;
+    }
+
+    conv.close("Sorry, something is wrong. Closing application.");
+  }
 });
 
 app.intent("User Replied Intent", async (conv, { answer }) => {
   try {
     console.log("user replied");
 
-    if (typeof answer !== "string") {
-      throw new EmptyAnswerError("User answer not found");
+    const userData = UserData.load(conv);
+    const currentSentence = userData.currentSentence;
+
+    if (currentSentence === "") {
+      userData.reset();
+
+      throw new CurrentSentenceNotFound("Current sentence not found");
     }
 
-    const userData = UserData.load(conv);
-    console.log(userData.retryCount);
+    if (typeof answer !== "string" || answer === "") {
+      conv.ask("Try again!." + currentSentence);
 
-    const originalSentence = await Sentence.load(userData.lastReadUnixtime);
-    const overMaxRetryCount = userData.retryCount >= MAX_RETRY_COUNT;
+      return;
+    }
 
     if (
-      Utils.percentageOfSimilarity(originalSentence.body, answer) >=
+      Utils.percentageOfSimilarity(currentSentence, answer) >=
       PASSING_LINE_PERCENTAGE
     ) {
-      await startPractice(conv, LastResult.succeeded);
-    } else if (overMaxRetryCount) {
-      await startPractice(conv, LastResult.failed);
+      const nextSentence = await getNextSentence(userData);
+      conv.ask(beforeNewSentenceMessage(LastResult.succeeded) + nextSentence);
+    } else if (userData.retryCount >= MAX_RETRY_COUNT) {
+      const nextSentence = await getNextSentence(userData);
+      conv.ask(beforeNewSentenceMessage(LastResult.failed) + nextSentence);
     } else {
       userData.incrementRetryCount();
-      conv.ask("Try again!." + originalSentence.body);
+      conv.ask("Try again!." + currentSentence);
     }
   } catch (error) {
     console.error(error);
+
+    if (error instanceof AvailableArticleNotExist) {
+      conv.close("Sorry, available practice is not exist. Please try later.");
+      return;
+    }
+
     conv.close("Sorry, something is wrong. Closing application.");
   }
 });
 
-app.intent("Skip Sentence Intent", async conv => {
-  console.log("skipped");
+app.intent("Skip Article Intent", async conv => {
+  try {
+    console.log("skipped");
 
-  await startPractice(conv, LastResult.skipped);
+    const userData = UserData.load(conv);
+    const nextSentence = await getNextSentence(userData);
+
+    conv.ask(beforeNewSentenceMessage(LastResult.skipped) + nextSentence);
+  } catch (error) {
+    console.error(error);
+
+    if (error instanceof AvailableArticleNotExist) {
+      conv.close("Sorry, available practice is not exist. Please try later.");
+      return;
+    }
+
+    conv.close("Sorry, something is wrong. Closing application.");
+  }
 });
 
 app.intent("Default Goodbye Intent", conv => {
@@ -59,15 +111,27 @@ app.intent("Default Goodbye Intent", conv => {
   conv.close("Goodbye.");
 });
 
-const startPractice = async (
-  conv: Conversation,
-  lastResult?: LastResult
-): Promise<void> => {
-  const userData = UserData.load(conv);
-  const newSentence = await Sentence.load(userData.lastReadUnixtime, true);
-  userData.reset(newSentence.unixtime);
+const getNextSentence = async (userData: UserData): Promise<string> => {
+  try {
+    let article: Article;
+    if (userData.isEmpty) {
+      article = await Article.getNext();
+    } else {
+      article = await Article.getNextOrIncrementCurrentIndex(
+        userData.articleId,
+        userData.currentSentence
+      );
+    }
+    userData.setCurrentPractice(article);
 
-  conv.ask(beforeNewSentenceMessage(lastResult) + newSentence.body);
+    return article.currentSentence;
+  } catch (error) {
+    if (error instanceof ArticleNotFound) {
+      userData.reset();
+    }
+
+    throw error;
+  }
 };
 
 const beforeNewSentenceMessage = (lastResult?: LastResult): string => {

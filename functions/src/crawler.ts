@@ -1,5 +1,6 @@
 import Parser = require("rss-parser");
 import Article from "./article";
+import Utils from "./utils";
 
 export default class Crawler {
   static async getFeedContents(url: string): Promise<Article[]> {
@@ -20,7 +21,12 @@ export default class Crawler {
         typeof item.isoDate !== "undefined"
       ) {
         result.push(
-          new Article(item.guid, item.title, item.contentSnippet, item.isoDate)
+          new Article(
+            item.guid,
+            item.title,
+            Utils.textToSentences(item.contentSnippet),
+            item.isoDate
+          )
         );
       }
     });
