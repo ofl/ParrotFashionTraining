@@ -4,7 +4,6 @@ import Utils from "./utils";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
-const crypto = require("crypto");
 
 export default class Article {
   guid: string;
@@ -31,7 +30,7 @@ export default class Article {
       batch.set(
         firestore
           .collection(ARTICLE_COLLECTION_PATH)
-          .doc(this.md5hex(article.guid)),
+          .doc(Utils.md5hex(article.guid)),
         article.toObject()
       );
     });
@@ -58,9 +57,6 @@ export default class Article {
       .orderBy("unixtime");
   }
 
-  private static md5hex(str: string) {
-    const md5 = crypto.createHash("md5");
-    return md5.update(str, "binary").digest("hex");
   }
 
   toObject(): Object {

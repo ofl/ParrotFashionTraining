@@ -1,4 +1,5 @@
 const Tokenizer = require("sentence-tokenizer");
+const crypto = require("crypto");
 
 export default class Utils {
   static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
@@ -34,5 +35,10 @@ export default class Utils {
     tokenizer.setEntry(text);
 
     return tokenizer.getSentences();
+  }
+
+  static md5hex(str: string) {
+    const md5 = crypto.createHash("md5");
+    return md5.update(str, "binary").digest("hex");
   }
 }
