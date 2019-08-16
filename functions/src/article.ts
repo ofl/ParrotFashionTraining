@@ -29,6 +29,8 @@ export default class Article {
   static async batchCreate(articles: Article[]): Promise<void> {
     const batch = firestore.batch();
 
+    console.log(`creating ${articles.length} articles`);
+
     articles.forEach(article => {
       batch.set(
         firestore
@@ -45,6 +47,8 @@ export default class Article {
     snapshot: FirebaseFirestore.QuerySnapshot
   ): Promise<void> {
     const batch = firestore.batch();
+
+    console.log(`deleting ${snapshot.docs.length} articles`);
 
     snapshot.docs.forEach(doc => {
       batch.delete(doc.ref);

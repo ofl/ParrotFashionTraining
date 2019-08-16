@@ -14,6 +14,7 @@ import {
   ArticleNotFound,
   AvailableArticleNotExist
 } from "./errors";
+import Batch from "./batch";
 
 const app = dialogflow();
 const MAX_RETRY_COUNT = 2;
@@ -153,3 +154,21 @@ const beforeNewSentenceMessage = (lastResult?: LastResult): string => {
 };
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
+
+exports.scheduledBatchCreateArticles = functions.pubsub
+  .schedule("10 * * * *")
+  .timeZone("Asia/Tokyo")
+  .onRun(async _context => {
+    console.log("Batch.createArticlesFromRSS");
+
+    await Batch.createArticlesFromRSS();
+  });
+
+exports.scheduledBatchDeleteArticles = functions.pubsub
+  .schedule("20 1 * * *")
+  .timeZone("Asia/Tokyo")
+  .onRun(async _context => {
+    console.log("Batch.deleteOldArticles");
+
+    await Batch.deleteOldArticles();
+  });
