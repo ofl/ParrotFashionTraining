@@ -1,45 +1,51 @@
-import Utils from "./utils";
 import { Conversation } from "./interfaces";
+import Article from "./article";
 
+// Singleton class
 export default class UserData {
   private static instance: UserData;
 
   private conv: Conversation;
+  currentSentence: string;
+  articleId: string;
   retryCount: number;
-  lastReadUnixtime: number;
 
   private constructor(
     conv: Conversation,
-    retryCount: number,
-    lastReadUnixtime: number
+    articleId: string,
+    currentSentence: string,
+    retryCount: number
   ) {
     this.conv = conv;
+    this.articleId = articleId;
+    this.currentSentence = currentSentence;
     this.retryCount = retryCount;
-    this.lastReadUnixtime = lastReadUnixtime;
   }
 
   static load(conv: Conversation) {
     if (!this.instance) {
       const data = conv.data as {
+        articleId: string;
+        currentSentence: string;
         retryCount: number;
         lastReadUnixtime: number;
       };
-      const oneDayBefore = Utils.getUnixtimeOfDaysBeforeNow(1);
 
-      const unixtime =
-        data.lastReadUnixtime && data.lastReadUnixtime > oneDayBefore
-          ? data.lastReadUnixtime
-          : oneDayBefore;
-
-      this.instance = new this(conv, data.retryCount || 0, unixtime);
+      this.instance = new this(
+        conv,
+        data.articleId || "",
+        data.currentSentence || "",
+        data.retryCount || 0
+      );
     }
     return this.instance;
   }
 
   save() {
     this.conv.data = {
-      retryCount: this.retryCount,
-      lastReadUnixtime: this.lastReadUnixtime
+      articleId: this.articleId,
+      currentSentence: this.currentSentence,
+      retryCount: this.retryCount
     };
   }
 
@@ -48,10 +54,22 @@ export default class UserData {
     this.save();
   }
 
-  reset(unixtime: number) {
+  setCurrentPractice(article: Article) {
+    this.articleId = article.guid;
     this.retryCount = 0;
-    this.lastReadUnixtime = unixtime;
+    this.currentSentence = article.currentSentence;
     this.save();
+  }
+
+  reset() {
+    this.articleId = "";
+    this.retryCount = 0;
+    this.currentSentence = "";
+    this.save();
+  }
+
+  get isEmpty(): boolean {
+    return this.articleId === "";
   }
 }
 
