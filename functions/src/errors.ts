@@ -12,12 +12,21 @@ class UserDataLoadError extends ApplicationError {
   public name = "UserDataLoadError";
 }
 
-class SentenceLoadError extends ApplicationError {
-  public name = "SentenceLoadError";
+class AvailableArticleNotExist extends ApplicationError {
+  public name = "AvailableArticleNotExist";
 }
 
-class EmptyAnswerError extends ApplicationError {
-  public name = "EmptyAnswerError";
+class ArticleNotFound extends ApplicationError {
+  public name = "ArticleNotFound";
 }
 
-export { UserDataLoadError, SentenceLoadError, EmptyAnswerError };
+class CurrentSentenceNotFound extends ApplicationError {
+  public name = "CurrentSentenceNotFound";
+}
+
+export {
+  UserDataLoadError,
+  ArticleNotFound,
+  AvailableArticleNotExist,
+  CurrentSentenceNotFound
+};
