@@ -67,7 +67,7 @@ export default class Article {
     articleId: string,
     currentSentence: string
   ): Promise<Article> {
-    const currentArticle = await this.get(articleId);
+    const currentArticle = await this.get(Utils.md5hex(articleId));
 
     const nextIndex = currentArticle.sentences.indexOf(currentSentence) + 1;
     if (nextIndex > 0 && nextIndex < currentArticle.sentences.length) {
