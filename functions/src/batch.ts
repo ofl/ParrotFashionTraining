@@ -3,12 +3,17 @@ import Crawler from "./crawler";
 import Article from "./article";
 
 export default class Batch {
-  static async createArticlesFromRSS() {
+  static async createArticlesFromRSS(days: number = 3) {
     const articles = await Crawler.getFeedContents(
       "http://feeds.nytimes.com/nyt/rss/Technology"
     );
 
-    return Article.batchCreate(articles);
+    const unixtime: number = Utils.getUnixtimeOfDaysBeforeNow(days);
+    const currentArticles = articles.filter(
+      article => article.unixtime > unixtime
+    );
+
+    return Article.batchCreate(currentArticles);
   }
 
   static async deleteOldArticles(days: number = 3): Promise<void> {
