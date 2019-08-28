@@ -23,6 +23,7 @@
     "sentence-tokenizer": "^1.0.1"
   },
   "devDependencies": {
+    "firebase-functions-test": "^0.1.6",
     "tslint": "^5.19.0",
     "typescript": "^3.5.3"
   },
