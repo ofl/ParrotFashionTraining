@@ -41,4 +41,8 @@ export default class Utils {
     const md5 = crypto.createHash("md5");
     return md5.update(str, "binary").digest("hex");
   }
+
+  static onePlusOne(): number {
+    return 1 + 1;
+  }
 }
