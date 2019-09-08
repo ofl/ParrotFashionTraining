@@ -1,6 +1,6 @@
 import Parser = require("rss-parser");
 import Article from "./article";
-import Utils from "./utils";
+import TextSplitter from "./text_splitter";
 
 export default class Crawler {
   static async getFeedContents(url: string): Promise<Article[]> {
@@ -24,7 +24,7 @@ export default class Crawler {
           new Article(
             item.guid,
             item.title,
-            Utils.textToSentences(item.contentSnippet),
+            TextSplitter.run(item.contentSnippet),
             item.isoDate
           )
         );
