@@ -5,23 +5,34 @@ import Utils from "./utils";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
+const NEWS_SOURCES: { [key: string]: string } = {
+  "nytimes.com": "New York Times",
+  "cnn.com": "CNN",
+  "reuters.com": "Reuters"
+};
 
 export default class Article {
   readonly guid: string;
   readonly title: string;
+  readonly body: string;
   readonly sentences: string[];
+  readonly creator: string;
   readonly unixtime: number;
   currentIndex: number;
 
   constructor(
     guid: string,
     title: string,
+    body: string,
     sentences: string[],
+    creator: string,
     isoDate: string
   ) {
     this.guid = guid;
     this.title = title;
+    this.body = body;
     this.sentences = sentences;
+    this.creator = creator;
     this.unixtime = new Date(isoDate).getTime();
     this.currentIndex = 0;
   }
@@ -91,7 +102,14 @@ export default class Article {
     if (!data) {
       throw new ArticleNotFound("Article not found");
     } else {
-      return new this(data.guid, data.title, data.sentences, data.unixtime);
+      return new this(
+        data.guid,
+        data.title,
+        data.body,
+        data.sentences,
+        data.creator,
+        data.unixtime
+      );
     }
   }
 
@@ -118,7 +136,14 @@ export default class Article {
   ): Promise<Article[]> {
     return snapshot.docs.map(doc => {
       const data = doc.data();
-      return new this(data.guid, data.title, data.sentences, data.unixtime);
+      return new this(
+        data.guid,
+        data.title,
+        data.body,
+        data.sentences,
+        data.creator,
+        data.unixtime
+      );
     });
   }
 
@@ -126,12 +151,22 @@ export default class Article {
     return {
       guid: this.guid,
       title: this.title,
+      body: this.body,
       sentences: this.sentences,
+      creator: this.creator,
       unixtime: this.unixtime
     };
   }
 
   get currentSentence(): string {
     return this.sentences[this.currentIndex];
+  }
+
+  get publisher(): string {
+    return this.newsSource || this.creator;
+  }
+
+  get newsSource(): string | null {
+    return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
   }
 }
