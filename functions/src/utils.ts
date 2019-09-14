@@ -23,6 +23,20 @@ export default class Utils {
     return md5.update(str, "binary").digest("hex");
   }
 
+  static findValueOfKeyInText(
+    text: string,
+    dict: { [key: string]: string }
+  ): string | null {
+    const result: string | undefined = Object.keys(dict).find(domain => {
+      return text.indexOf(domain) >= 0;
+    });
+    if (typeof result === "undefined") {
+      return null;
+    }
+
+    return dict[result];
+  }
+
   private static sentenceToWordArray(sentence: string): string[] {
     const words = sentence.match(/\S+/g);
     if (words === null) {

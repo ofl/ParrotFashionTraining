@@ -5,6 +5,11 @@ import Utils from "./utils";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
+const NEWS_SOURCES: { [key: string]: string } = {
+  "nytimes.com": "New York Times",
+  "cnn.com": "CNN",
+  "reuters.com": "Reuters"
+};
 
 export default class Article {
   readonly guid: string;
@@ -155,5 +160,13 @@ export default class Article {
 
   get currentSentence(): string {
     return this.sentences[this.currentIndex];
+  }
+
+  get publisher(): string {
+    return this.newsSource || this.creator;
+  }
+
+  get newsSource(): string | null {
+    return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
   }
 }
