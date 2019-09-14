@@ -18,13 +18,16 @@ export default class Crawler {
         typeof item.guid !== "undefined" &&
         typeof item.title !== "undefined" &&
         typeof item.contentSnippet !== "undefined" &&
+        typeof item.creator !== "undefined" &&
         typeof item.isoDate !== "undefined"
       ) {
         result.push(
           new Article(
             item.guid,
             item.title,
+            item.contentSnippet,
             TextSplitter.run(item.contentSnippet),
+            item.creator,
             item.isoDate
           )
         );
