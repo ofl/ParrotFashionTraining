@@ -3,7 +3,7 @@ export default class SSML {
     return `<speak>${text}</speak>`;
   }
 
-  static encloseSentence(sentence: string, rate: string = "normal"): string {
+  static encloseSentence(sentence: string, rate: string): string {
     return `<s><prosody rate="${rate}">${sentence}<prosody></s>`;
   }
 

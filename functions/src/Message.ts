@@ -18,11 +18,7 @@ class RetryMessage {
 class ResultMessage {
   static readonly EXCELLENT: string[] = ["Perfect!", "Excellent!"];
   static readonly GOOD: string[] = ["OK!", "Good job!", "Well done!"];
-  static readonly REGRETTABLE: string[] = [
-    "So close!",
-    "Almost had it!",
-    "Well done!"
-  ];
+  static readonly REGRETTABLE: string[] = ["So close!", "Almost had it!"];
   static readonly POOR: string[] = [
     "Don't mind!",
     "Let's do your best next time!"
