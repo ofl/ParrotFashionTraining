@@ -4,15 +4,15 @@ firebase.initializeApp();
 
 import { dialogflow } from "actions-on-google";
 
-import Article from "./article";
-import UserData from "./user_data";
+import Article from "./Article";
+import UserData from "./UserData";
 import AnswerResult from "./AnswerResult";
 import {
   CurrentSentenceNotFound,
   ArticleNotFound,
   AvailableArticleNotExist
 } from "./errors";
-import Batch from "./batch";
+import Batch from "./Batch";
 import Message from "./Message";
 import Speaker from "./Speaker";
 

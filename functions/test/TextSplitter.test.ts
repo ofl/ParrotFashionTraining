@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import TextSplitter from "../src/text_splitter";
+import TextSplitter from "../src/TextSplitter";
 
 describe(".run", () => {
   it("文章が適切な位置で分割されること1", () => {

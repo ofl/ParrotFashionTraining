@@ -1,6 +1,6 @@
 import Parser = require("rss-parser");
-import Article from "./article";
-import TextSplitter from "./text_splitter";
+import Article from "./Article";
+import TextSplitter from "./TextSplitter";
 
 export default class Crawler {
   static async getFeedContents(url: string): Promise<Article[]> {

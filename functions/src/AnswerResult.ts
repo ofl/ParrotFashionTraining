@@ -1,4 +1,4 @@
-import Utils from "./utils";
+import Utils from "./Utils";
 
 const REGRETTABLE_LEVEL: number = 60;
 const GOOD_LEVEL: number = 80;

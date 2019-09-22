@@ -1,5 +1,5 @@
 import { Conversation } from "./interfaces";
-import Article from "./article";
+import Article from "./Article";
 import Speaker from "./Speaker";
 
 // Singleton class

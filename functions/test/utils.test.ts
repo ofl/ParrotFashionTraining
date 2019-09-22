@@ -1,7 +1,7 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import Utils from "../src/utils";
+import Utils from "../src/Utils";
 
 describe(".findValueOfKeyInText", () => {
   const NEWS_SOURCES: { [key: string]: string } = {
