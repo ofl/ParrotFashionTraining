@@ -2,13 +2,6 @@ import { Conversation } from "./interfaces";
 import SSML from "./SSML";
 
 export default class Speaker {
-  private static instance: Speaker;
-
-  private conv: Conversation;
-  readingSpeed: number;
-  private reply: string;
-  private sentence: string;
-
   static readonly READING_SPEED: string[] = [
     "x-slow",
     "slow",
@@ -17,17 +10,14 @@ export default class Speaker {
     "x-fast"
   ];
 
+  private static instance: Speaker;
+
   private constructor(
-    conv: Conversation,
-    readingSpeed: number,
-    sentence: string,
-    reply: string
-  ) {
-    this.conv = conv;
-    this.readingSpeed = readingSpeed;
-    this.sentence = sentence;
-    this.reply = reply;
-  }
+    private conv: Conversation,
+    public readingSpeed: number,
+    private sentence: string,
+    private reply: string
+  ) {}
 
   static setUp(
     conv: Conversation,
