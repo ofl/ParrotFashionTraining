@@ -2,6 +2,9 @@ import Utils from "./utils";
 
 export default class AnswerResult {
   private percentage: number;
+const REGRETTABLE_LEVEL: number = 60;
+const GOOD_LEVEL: number = 80;
+const PERFECT_LEVEL: number = 100;
 
   constructor(percentage: number) {
     this.percentage = percentage;
@@ -14,18 +17,18 @@ export default class AnswerResult {
   }
 
   get isPoor(): boolean {
-    return this.percentage < 60;
+    return this.percentage < REGRETTABLE_LEVEL;
   }
 
   get isRegrettable(): boolean {
-    return 60 <= this.percentage && this.percentage < 80;
+    return REGRETTABLE_LEVEL <= this.percentage && this.percentage < GOOD_LEVEL;
   }
 
   get isGood(): boolean {
-    return 80 <= this.percentage && this.percentage < 100;
+    return GOOD_LEVEL <= this.percentage && this.percentage < PERFECT_LEVEL;
   }
 
   get isExcellent(): boolean {
-    return 100 <= this.percentage;
+    return PERFECT_LEVEL <= this.percentage;
   }
 }
