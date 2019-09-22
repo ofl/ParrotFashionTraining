@@ -4,21 +4,20 @@ firebase.initializeApp();
 
 import { dialogflow } from "actions-on-google";
 
-import Utils from "./utils";
 import Article from "./article";
 import UserData from "./user_data";
-// import Batch from "./batch";
-import { LastResult } from "./interfaces";
+import AnswerResult from "./AnswerResult";
 import {
   CurrentSentenceNotFound,
   ArticleNotFound,
   AvailableArticleNotExist
 } from "./errors";
 import Batch from "./batch";
+import Message from "./Message";
+import Speaker from "./Speaker";
 
 const app = dialogflow();
 const MAX_RETRY_COUNT = 2;
-const PASSING_LINE_PERCENTAGE = 70;
 
 app.intent("Default Welcome Intent", async conv => {
   try {
@@ -26,28 +25,31 @@ app.intent("Default Welcome Intent", async conv => {
 
     const userData = UserData.load(conv);
     const nextSentence = await getNextSentence(userData);
-
-    conv.ask(beforeNewSentenceMessage() + nextSentence);
-
-    // await Batch.createArticlesFromRSS();
+    Speaker.setUp(
+      conv,
+      userData.readingSpeed,
+      nextSentence,
+      Message.welcome
+    ).ask();
   } catch (error) {
     console.error(error);
 
     if (error instanceof AvailableArticleNotExist) {
-      conv.close("Sorry, available practice is not exist. Please try later.");
+      conv.close(error.message);
       return;
     }
 
-    conv.close("Sorry, something is wrong. Closing application.");
+    conv.close(error.message);
   }
 });
 
-app.intent("User Replied Intent", async (conv, { answer }) => {
+app.intent("User Answered Intent", async (conv, { answer }) => {
   try {
-    console.log("user replied");
+    console.log("user answered");
 
     const userData = UserData.load(conv);
     const currentSentence = userData.currentSentence;
+    const speaker = Speaker.setUp(conv, userData.readingSpeed, currentSentence);
 
     if (currentSentence === "") {
       userData.reset();
@@ -56,33 +58,29 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
     }
 
     if (typeof answer !== "string" || answer === "") {
-      conv.ask("Try again!." + currentSentence);
+      speaker.addReply(Message.retry);
+      speaker.ask();
 
       return;
     }
 
-    if (
-      Utils.percentageOfSimilarity(currentSentence, answer) >=
-      PASSING_LINE_PERCENTAGE
-    ) {
-      const nextSentence = await getNextSentence(userData);
-      conv.ask(beforeNewSentenceMessage(LastResult.succeeded) + nextSentence);
-    } else if (userData.retryCount >= MAX_RETRY_COUNT) {
-      const nextSentence = await getNextSentence(userData);
-      conv.ask(beforeNewSentenceMessage(LastResult.failed) + nextSentence);
-    } else {
+    const answerResult = AnswerResult.get(currentSentence, answer);
+    speaker.addReply(Message.getResultMessage(answerResult));
+
+    if (canRetry(userData.retryCount, answerResult)) {
+      speaker.speakSlowly();
       userData.incrementRetryCount();
-      conv.ask("Try again!." + currentSentence);
+      userData.setReadingSpeed(speaker.readingSpeed);
+    } else {
+      const nextSentence = await getNextSentence(userData);
+      speaker.setSentence(nextSentence);
     }
+
+    speaker.ask();
   } catch (error) {
     console.error(error);
 
-    if (error instanceof AvailableArticleNotExist) {
-      conv.close("Sorry, available practice is not exist. Please try later.");
-      return;
-    }
-
-    conv.close("Sorry, something is wrong. Closing application.");
+    conv.close(error.message);
   }
 });
 
@@ -93,23 +91,28 @@ app.intent("Skip Article Intent", async conv => {
     const userData = UserData.load(conv);
     const nextSentence = await getNextSentence(userData);
 
-    conv.ask(beforeNewSentenceMessage(LastResult.skipped) + nextSentence);
+    Speaker.setUp(
+      conv,
+      userData.readingSpeed,
+      nextSentence,
+      Message.resultSkipped
+    ).ask();
   } catch (error) {
     console.error(error);
 
     if (error instanceof AvailableArticleNotExist) {
-      conv.close("Sorry, available practice is not exist. Please try later.");
+      conv.close(error.message);
       return;
     }
 
-    conv.close("Sorry, something is wrong. Closing application.");
+    conv.close(error.message);
   }
 });
 
 app.intent("Default Goodbye Intent", conv => {
   console.log("goodbye");
 
-  conv.close("Goodbye.");
+  conv.close(Message.bye);
 });
 
 const getNextSentence = async (userData: UserData): Promise<string> => {
@@ -135,22 +138,11 @@ const getNextSentence = async (userData: UserData): Promise<string> => {
   }
 };
 
-const beforeNewSentenceMessage = (lastResult?: LastResult): string => {
-  if (typeof lastResult === "undefined") {
-    return "Let's start!.";
+const canRetry = (retryCount: number, result: AnswerResult): boolean => {
+  if (retryCount >= MAX_RETRY_COUNT) {
+    return false;
   }
-
-  switch (lastResult) {
-    case 0:
-      // => succeeded
-      return "Good job!.";
-    case 1:
-      // => failed
-      return "Don't mind!.";
-    default:
-      // => skipped
-      return "All right. Let's start next sentence!.";
-  }
+  return result.isPoor || result.isRegrettable;
 };
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);

@@ -37,6 +37,10 @@ export default class Utils {
     return dict[result];
   }
 
+  static selectRandomly<T>(array: T[]): T {
+    return array[Math.floor(Math.random() * array.length)];
+  }
+
   private static sentenceToWordArray(sentence: string): string[] {
     const words = sentence.match(/\S+/g);
     if (words === null) {
