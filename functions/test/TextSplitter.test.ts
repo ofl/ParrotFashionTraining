@@ -1,15 +1,15 @@
 import { describe, it } from "mocha";
 import { assert } from "chai";
 
-import TextSplitter from "../src/text_splitter";
+import TextSplitter from "../src/TextSplitter";
 
 describe(".run", () => {
   it("文章が適切な位置で分割されること1", () => {
     const testText =
-      "Democrats and recommand Republicans at both the federal and state levels are uniting to investigate the power of Big Tech and, potentially, to rein in the dominant companies.";
+      "Democrats and recommend Republicans at both the federal and state levels are uniting to investigate the power of Big Tech and, potentially, to rein in the dominant companies.";
 
     assert.sameMembers(TextSplitter.run(testText), [
-      "Democrats and recommand Republicans at both the federal",
+      "Democrats and recommend Republicans at both the federal",
       " and state levels are uniting to investigate the power of Big Tech and, potentially, ",
       "to rein in the dominant companies."
     ]);
@@ -142,12 +142,12 @@ describe(".run", () => {
 //       "apple, ",
 //       "banana, ",
 //       "and grape are fruits, ",
-//       "but carot is vegetable."
+//       "but carrot is vegetable."
 //     ];
 
 //     assert.sameMembers(TextSplitter.rejoinText(testSentences), [
 //       "Orange, apple, banana, and grape are fruits, ",
-//       "but carot is vegetable."
+//       "but carrot is vegetable."
 //     ]);
 //   });
 // });

@@ -1,7 +1,7 @@
 import * as firebase from "firebase-admin";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
 import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
-import Utils from "./utils";
+import Utils from "./Utils";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";

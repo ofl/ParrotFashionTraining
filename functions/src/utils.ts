@@ -9,13 +9,13 @@ export default class Utils {
     originalSentence: string,
     targetSentence: string
   ): number {
-    const orginalWords = new Set(this.sentenceToWordArray(originalSentence));
+    const originalWords = new Set(this.sentenceToWordArray(originalSentence));
     const targetWords = new Set(this.sentenceToWordArray(targetSentence));
     const intersection = new Set(
-      [...orginalWords].filter(e => targetWords.has(e))
+      [...originalWords].filter(e => targetWords.has(e))
     );
 
-    return Math.round((intersection.size / orginalWords.size) * 100);
+    return Math.round((intersection.size / originalWords.size) * 100);
   }
 
   static md5hex(str: string) {

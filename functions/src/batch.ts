@@ -1,6 +1,6 @@
-import Utils from "./utils";
-import Crawler from "./crawler";
-import Article from "./article";
+import Utils from "./Utils";
+import Crawler from "./Crawler";
+import Article from "./Article";
 
 export default class Batch {
   static async createArticlesFromRSS(days: number = 3) {
