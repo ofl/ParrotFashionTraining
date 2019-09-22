@@ -28,16 +28,16 @@ describe(".findValueOfKeyInText", () => {
   });
 });
 
-describe(".randomlySelect", () => {
+describe(".selectRandomly", () => {
   it("文字列の配列を渡すとランダムな文字が返ること", () => {
     const array: string[] = ["foo", "bar", "baz"];
 
-    assert.isString(Utils.randomlySelect(array));
+    assert.isString(Utils.selectRandomly(array));
   });
 
   it("数値の配列を渡すとランダムな数値が返ること", () => {
     const array: number[] = [1, 2, 3];
 
-    assert.isNumber(Utils.randomlySelect(array));
+    assert.isNumber(Utils.selectRandomly(array));
   });
 });
