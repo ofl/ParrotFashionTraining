@@ -27,3 +27,17 @@ describe(".findValueOfKeyInText", () => {
     assert.isNull(Utils.findValueOfKeyInText(guid, NEWS_SOURCES));
   });
 });
+
+describe(".randomlySelect", () => {
+  it("文字列の配列を渡すとランダムな文字が返ること", () => {
+    const array: string[] = ["foo", "bar", "baz"];
+
+    assert.isString(Utils.randomlySelect(array));
+  });
+
+  it("数値の配列を渡すとランダムな数値が返ること", () => {
+    const array: number[] = [1, 2, 3];
+
+    assert.isNumber(Utils.randomlySelect(array));
+  });
+});
