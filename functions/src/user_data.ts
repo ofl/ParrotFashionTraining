@@ -1,5 +1,6 @@
 import { Conversation } from "./interfaces";
 import Article from "./article";
+import Speaker from "./Speaker";
 
 // Singleton class
 export default class UserData {
@@ -9,17 +10,20 @@ export default class UserData {
   currentSentence: string;
   articleId: string;
   retryCount: number;
+  readingSpeed: number;
 
   private constructor(
     conv: Conversation,
     articleId: string,
     currentSentence: string,
-    retryCount: number
+    retryCount: number,
+    readingSpeed: number
   ) {
     this.conv = conv;
     this.articleId = articleId;
     this.currentSentence = currentSentence;
     this.retryCount = retryCount;
+    this.readingSpeed = readingSpeed;
   }
 
   static load(conv: Conversation) {
@@ -28,6 +32,7 @@ export default class UserData {
         articleId: string;
         currentSentence: string;
         retryCount: number;
+        readingSpeed: number;
         lastReadUnixtime: number;
       };
 
@@ -35,7 +40,8 @@ export default class UserData {
         conv,
         data.articleId || "",
         data.currentSentence || "",
-        data.retryCount || 0
+        data.retryCount || 0,
+        data.readingSpeed || Speaker.READING_SPEED.indexOf("medium")
       );
     }
     return this.instance;
@@ -52,6 +58,11 @@ export default class UserData {
   incrementRetryCount() {
     this.retryCount++;
     this.save();
+  }
+
+  setReadingSpeed(value: number) {
+    this.readingSpeed = value;
+    this.save;
   }
 
   setCurrentPractice(article: Article) {
