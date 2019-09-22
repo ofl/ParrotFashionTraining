@@ -41,7 +41,7 @@ export default class UserData {
         data.articleId || "",
         data.currentSentence || "",
         data.retryCount || 0,
-        data.readingSpeed || Speaker.READING_SPEED.indexOf("medium")
+        data.readingSpeed || Speaker.defaultReadingSpeed()
       );
     }
     return this.instance;
