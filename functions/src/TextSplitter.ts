@@ -75,22 +75,22 @@ export default class TextSplitter {
     const result: string[] = [];
     let currentText = splittedText[0];
 
-    splittedText.forEach((splitedText, index, arr) => {
+    splittedText.forEach((splittedText, index, arr) => {
       if (index === 0) {
         return;
       }
 
       if (
         this.isShortEnough(currentText, 3) ||
-        this.isShortEnough(splitedText, 3) ||
+        this.isShortEnough(splittedText, 3) ||
         (/,\s$/.test(currentText) &&
-          ((this.isShortEnough(splitedText, 3) && /,\s$/.test(splitedText)) ||
-            /^\s*and\s/.test(splitedText)))
+          ((this.isShortEnough(splittedText, 3) && /,\s$/.test(splittedText)) ||
+            /^\s*and\s/.test(splittedText)))
       ) {
-        currentText += splitedText;
+        currentText += splittedText;
       } else {
         result.push(currentText);
-        currentText = splitedText;
+        currentText = splittedText;
       }
 
       if (this.isLastIndex(arr, index)) {
@@ -107,12 +107,12 @@ export default class TextSplitter {
     minLength: number = 10,
     depth: number = 0
   ): string[] {
-    const pimctuation = punctuations[depth];
+    const punctuation = punctuations[depth];
 
-    if (pimctuation == null || this.isShortEnough(sentence, minLength)) {
+    if (punctuation == null || this.isShortEnough(sentence, minLength)) {
       return [sentence];
     }
-    const array = this.splitTextWithPunctuation(sentence, pimctuation);
+    const array = this.splitTextWithPunctuation(sentence, punctuation);
 
     const result: string[] = [];
     array.forEach(splittedSentence => {

@@ -5,6 +5,7 @@
         "firestore",
         "nytimes",
         "pubsub",
+        "splitted",
         "ssml",
         "unixtime"
     ]
