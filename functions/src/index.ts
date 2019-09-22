@@ -35,17 +35,17 @@ app.intent("Default Welcome Intent", async conv => {
     console.error(error);
 
     if (error instanceof AvailableArticleNotExist) {
-      conv.close(error.toString());
+      conv.close(error.message);
       return;
     }
 
-    conv.close(error.toString());
+    conv.close(error.message);
   }
 });
 
-app.intent("User Replied Intent", async (conv, { answer }) => {
+app.intent("User Answered Intent", async (conv, { answer }) => {
   try {
-    console.log("user replied");
+    console.log("user answered");
 
     const userData = UserData.load(conv);
     const currentSentence = userData.currentSentence;
@@ -80,7 +80,7 @@ app.intent("User Replied Intent", async (conv, { answer }) => {
   } catch (error) {
     console.error(error);
 
-    conv.close(error.toString());
+    conv.close(error.message);
   }
 });
 
@@ -101,11 +101,11 @@ app.intent("Skip Article Intent", async conv => {
     console.error(error);
 
     if (error instanceof AvailableArticleNotExist) {
-      conv.close(error.toString());
+      conv.close(error.message);
       return;
     }
 
-    conv.close(error.toString());
+    conv.close(error.message);
   }
 });
 
