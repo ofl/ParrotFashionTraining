@@ -12,27 +12,17 @@ const NEWS_SOURCES: { [key: string]: string } = {
 };
 
 export default class Article {
-  readonly guid: string;
-  readonly title: string;
-  readonly body: string;
-  readonly sentences: string[];
-  readonly creator: string;
   readonly unixtime: number;
   currentIndex: number;
 
   constructor(
-    guid: string,
-    title: string,
-    body: string,
-    sentences: string[],
-    creator: string,
+    readonly guid: string,
+    readonly title: string,
+    readonly body: string,
+    readonly sentences: string[],
+    readonly creator: string,
     isoDate: string
   ) {
-    this.guid = guid;
-    this.title = title;
-    this.body = body;
-    this.sentences = sentences;
-    this.creator = creator;
     this.unixtime = new Date(isoDate).getTime();
     this.currentIndex = 0;
   }

@@ -75,22 +75,22 @@ export default class TextSplitter {
     const result: string[] = [];
     let currentText = splittedText[0];
 
-    splittedText.forEach((splittedText, index, arr) => {
+    splittedText.forEach((text, index, arr) => {
       if (index === 0) {
         return;
       }
 
       if (
         this.isShortEnough(currentText, 3) ||
-        this.isShortEnough(splittedText, 3) ||
+        this.isShortEnough(text, 3) ||
         (/,\s$/.test(currentText) &&
-          ((this.isShortEnough(splittedText, 3) && /,\s$/.test(splittedText)) ||
-            /^\s*and\s/.test(splittedText)))
+          ((this.isShortEnough(text, 3) && /,\s$/.test(text)) ||
+            /^\s*and\s/.test(text)))
       ) {
-        currentText += splittedText;
+        currentText += text;
       } else {
         result.push(currentText);
-        currentText = splittedText;
+        currentText = text;
       }
 
       if (this.isLastIndex(arr, index)) {

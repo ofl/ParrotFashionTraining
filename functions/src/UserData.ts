@@ -6,25 +6,13 @@ import Speaker from "./Speaker";
 export default class UserData {
   private static instance: UserData;
 
-  private conv: Conversation;
-  currentSentence: string;
-  articleId: string;
-  retryCount: number;
-  readingSpeed: number;
-
   private constructor(
-    conv: Conversation,
-    articleId: string,
-    currentSentence: string,
-    retryCount: number,
-    readingSpeed: number
-  ) {
-    this.conv = conv;
-    this.articleId = articleId;
-    this.currentSentence = currentSentence;
-    this.retryCount = retryCount;
-    this.readingSpeed = readingSpeed;
-  }
+    private conv: Conversation,
+    public articleId: string,
+    public currentSentence: string,
+    public retryCount: number,
+    public readingSpeed: number
+  ) {}
 
   static load(conv: Conversation) {
     if (!this.instance) {
