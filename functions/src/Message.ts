@@ -11,6 +11,10 @@ class GreetingMessage {
   ];
 }
 
+class AcceptedMessage {
+  static readonly ACCEPTED: string[] = ["Okay.", "All right.", "Sure."];
+}
+
 class RetryMessage {
   static readonly AGAIN: string[] = ["Try again!."];
 }
@@ -41,6 +45,9 @@ export default class Message {
   }
   static get retry(): string {
     return Utils.selectRandomly(RetryMessage.AGAIN);
+  }
+  static get okay(): string {
+    return Utils.selectRandomly(AcceptedMessage.ACCEPTED);
   }
   static get resultExcellent(): string {
     return Utils.selectRandomly(ResultMessage.EXCELLENT);
