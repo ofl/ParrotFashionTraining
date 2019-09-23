@@ -25,6 +25,7 @@ class CurrentSentenceNotFound extends ApplicationError {
 }
 
 export {
+  ApplicationError,
   UserDataLoadError,
   ArticleNotFound,
   AvailableArticleNotExist,

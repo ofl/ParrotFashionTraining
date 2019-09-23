@@ -3,12 +3,12 @@ import UserData from "./UserData";
 import Article from "./Article";
 import Speaker from "./Speaker";
 import Message from "./Message";
+import AnswerResult from "./AnswerResult";
 import {
   ApplicationError,
   ArticleNotFound,
   CurrentSentenceNotFound
 } from "./errors";
-import AnswerResult from "./AnswerResult";
 
 const MAX_RETRY_COUNT = 2;
 
@@ -93,7 +93,6 @@ export default class Scenario {
 
   static goodbye(conv: Conversation) {
     console.log("goodbye");
-
     conv.close(Message.bye);
   }
 
