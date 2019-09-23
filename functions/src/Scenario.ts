@@ -16,14 +16,7 @@ export default class Scenario {
   static async welcome(conv: Conversation) {
     console.log("welcome");
 
-    const userData = UserData.load(conv);
-    const nextSentence = await this.getNextSentence(userData);
-    Speaker.setUp(
-      conv,
-      userData.readingSpeed,
-      nextSentence,
-      Message.welcome
-    ).ask();
+    await this.readNewArticle(conv);
   }
 
   static async userAnswered(conv: Conversation, answer: string) {
@@ -47,8 +40,15 @@ export default class Scenario {
       userData.incrementRetryCount();
       userData.setReadingSpeed(speaker.readingSpeed);
     } else {
-      const nextSentence = await this.getNextSentence(userData);
+      const currentArticle = await this.getCurrentArticle(userData);
+      const nextSentence = currentArticle.currentSentence;
       speaker.setSentence(nextSentence);
+      if (currentArticle.currentIndex === 0) {
+        speaker.setTitleAndPublisher(
+          currentArticle.title,
+          currentArticle.publisher
+        );
+      }
     }
 
     speaker.ask();
@@ -57,15 +57,25 @@ export default class Scenario {
   static async skipArticle(conv: Conversation) {
     console.log("skipped");
 
-    const userData = UserData.load(conv);
-    const nextSentence = await this.getNextSentence(userData);
+    await this.readNewArticle(conv);
+  }
 
-    Speaker.setUp(
+  static async readNewArticle(conv: Conversation) {
+    const userData = UserData.load(conv);
+    const currentArticle = await this.getCurrentArticle(userData);
+    const nextSentence = currentArticle.currentSentence;
+
+    const speaker = Speaker.setUp(
       conv,
       userData.readingSpeed,
       nextSentence,
       Message.resultSkipped
-    ).ask();
+    );
+    speaker.setTitleAndPublisher(
+      currentArticle.title,
+      currentArticle.publisher
+    );
+    speaker.ask();
   }
 
   static async sayAgain(conv: Conversation) {
@@ -103,7 +113,7 @@ export default class Scenario {
     return result.isPoor || result.isRegrettable;
   }
 
-  private static async getNextSentence(userData: UserData): Promise<string> {
+  private static async getCurrentArticle(userData: UserData): Promise<Article> {
     try {
       let article: Article;
       if (userData.isEmpty) {
@@ -116,7 +126,7 @@ export default class Scenario {
       }
       userData.setCurrentPractice(article);
 
-      return article.currentSentence;
+      return article;
     } catch (error) {
       if (error instanceof ArticleNotFound) {
         userData.reset();

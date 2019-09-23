@@ -6,6 +6,9 @@ const READING_SPEED: string[] = ["x-slow", "slow", "medium", "fast", "x-fast"];
 export default class Speaker {
   private static instance: Speaker;
 
+  private publisher: string = "";
+  private title: string = "";
+
   private constructor(
     private conv: Conversation,
     public readingSpeed: number,
@@ -51,14 +54,31 @@ export default class Speaker {
     this.sentence = value;
   }
 
+  setTitleAndPublisher(title: string, publisher: string) {
+    this.title = title;
+    this.publisher = publisher;
+  }
+
   private get ssml() {
     return SSML.enclose(this.body);
   }
 
   private get body(): string {
-    return this.sentence === ""
-      ? this.reply
-      : this.reply +
-          SSML.encloseSentence(this.sentence, READING_SPEED[this.readingSpeed]);
+    let text = this.reply;
+    text += SSML.addBreak(1);
+
+    if (this.title !== "") {
+      text += `${this.title} by ${this.publisher}`;
+      text += SSML.addBreak(1);
+    }
+
+    if (this.sentence !== "") {
+      text += SSML.encloseSentence(
+        this.sentence,
+        READING_SPEED[this.readingSpeed]
+      );
+    }
+
+    return text;
   }
 }
