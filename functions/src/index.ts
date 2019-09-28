@@ -4,50 +4,66 @@ firebase.initializeApp();
 
 import { dialogflow } from "actions-on-google";
 
+import UserData from "./UserData";
 import Batch from "./Batch";
 import Scenario from "./Scenario";
+import Message from "./Message";
 
 const app = dialogflow();
 
 app.intent("Default Welcome Intent", async conv => {
   try {
-    await Scenario.welcome(conv);
+    const userData = UserData.load(conv);
+    const scenario = await Scenario.welcome(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("User Answered Intent", async (conv, { answer }) => {
   try {
+    const userData = UserData.load(conv);
     if (typeof answer !== "string" || answer === "") {
-      await Scenario.sayAgain(conv);
+      const scenario = await Scenario.sayAgain(userData);
+      conv.ask(scenario.ssml);
       return;
     }
 
-    await Scenario.userAnswered(conv, answer);
+    const answered_scenario = await Scenario.userAnswered(userData, answer);
+    conv.ask(answered_scenario.ssml);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Skip Article Intent", async conv => {
   try {
-    await Scenario.skipArticle(conv);
+    const userData = UserData.load(conv);
+    const scenario = await Scenario.skipArticle(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Say It Again Intent", async conv => {
   try {
-    await Scenario.sayAgain(conv);
+    const userData = UserData.load(conv);
+    const scenario = await Scenario.sayAgain(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Default Goodbye Intent", conv => {
-  Scenario.goodbye(conv);
+  console.log("goodbye");
+  conv.close(Message.bye);
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
