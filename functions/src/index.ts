@@ -4,50 +4,61 @@ firebase.initializeApp();
 
 import { dialogflow } from "actions-on-google";
 
+import UserData from "./UserData";
 import Batch from "./Batch";
 import Scenario from "./Scenario";
+import Message from "./Message";
 
 const app = dialogflow();
 
 app.intent("Default Welcome Intent", async conv => {
   try {
-    await Scenario.welcome(conv);
+    const userData = UserData.load(conv);
+    await Scenario.welcome(userData);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("User Answered Intent", async (conv, { answer }) => {
   try {
+    const userData = UserData.load(conv);
     if (typeof answer !== "string" || answer === "") {
-      await Scenario.sayAgain(conv);
+      await Scenario.sayAgain(userData);
       return;
     }
 
-    await Scenario.userAnswered(conv, answer);
+    await Scenario.userAnswered(userData, answer);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Skip Article Intent", async conv => {
   try {
-    await Scenario.skipArticle(conv);
+    const userData = UserData.load(conv);
+    await Scenario.skipArticle(userData);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Say It Again Intent", async conv => {
   try {
-    await Scenario.sayAgain(conv);
+    const userData = UserData.load(conv);
+    await Scenario.sayAgain(userData);
   } catch (error) {
-    Scenario.errorRaised(conv, error);
+    console.error(error);
+    conv.close(error.message);
   }
 });
 
 app.intent("Default Goodbye Intent", conv => {
-  Scenario.goodbye(conv);
+  console.log("goodbye");
+  conv.close(Message.bye);
 });
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);

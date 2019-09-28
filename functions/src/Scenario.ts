@@ -1,30 +1,46 @@
-import { Conversation } from "./interfaces";
 import UserData from "./UserData";
 import Article from "./Article";
-import Speaker from "./Speaker";
 import Message from "./Message";
 import AnswerResult from "./AnswerResult";
-import {
-  ApplicationError,
-  ArticleNotFound,
-  CurrentSentenceNotFound
-} from "./errors";
+import SSML from "./SSML";
+import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
 
 const MAX_RETRY_COUNT = 2;
+const READING_SPEED: string[] = ["x-slow", "slow", "medium", "fast", "x-fast"];
 
 export default class Scenario {
-  static async welcome(conv: Conversation) {
-    console.log("welcome");
+  private publisher: string = "";
+  private title: string = "";
 
-    await this.readNewArticle(conv);
+  constructor(
+    public readingSpeed: number,
+    private sentence: string,
+    private reply: string
+  ) {}
+
+  static setUp(
+    readingSpeed: number = Scenario.defaultReadingSpeed(),
+    sentence: string = "",
+    reply: string = ""
+  ): Scenario {
+    return new this(readingSpeed, sentence, reply);
   }
 
-  static async userAnswered(conv: Conversation, answer: string) {
+  static defaultReadingSpeed(): number {
+    return READING_SPEED.indexOf("medium");
+  }
+
+  static async welcome(userData: UserData): Promise<Scenario> {
+    console.log("welcome");
+
+    return await this.readNewArticle(userData, Message.welcome);
+  }
+
+  static async userAnswered(userData: UserData, answer: string) {
     console.log("user answered");
 
-    const userData = UserData.load(conv);
     const currentSentence = userData.currentSentence;
-    const speaker = Speaker.setUp(conv, userData.readingSpeed, currentSentence);
+    const reply = Scenario.setUp(userData.readingSpeed, currentSentence);
 
     if (currentSentence === "") {
       userData.reset();
@@ -33,57 +49,50 @@ export default class Scenario {
     }
 
     const answerResult = AnswerResult.get(currentSentence, answer);
-    speaker.addReply(Message.getResultMessage(answerResult));
+    reply.addReply(Message.getResultMessage(answerResult));
 
     if (this.canRetry(userData.retryCount, answerResult)) {
-      speaker.speakSlowly();
+      reply.speakSlowly();
       userData.incrementRetryCount();
-      userData.setReadingSpeed(speaker.readingSpeed);
+      userData.setReadingSpeed(reply.readingSpeed);
     } else {
       const currentArticle = await this.getCurrentArticle(userData);
       const nextSentence = currentArticle.currentSentence;
-      speaker.setSentence(nextSentence);
+      reply.setSentence(nextSentence);
       if (currentArticle.currentIndex === 0) {
-        speaker.setTitleAndPublisher(
+        reply.setTitleAndPublisher(
           currentArticle.title,
           currentArticle.publisher
         );
       }
     }
 
-    speaker.ask();
+    return reply;
   }
 
-  static async skipArticle(conv: Conversation) {
+  static async skipArticle(userData: UserData): Promise<Scenario> {
     console.log("skipped");
 
-    await this.readNewArticle(conv);
+    return await this.readNewArticle(userData, Message.resultSkipped);
   }
 
-  static async readNewArticle(conv: Conversation) {
-    const userData = UserData.load(conv);
+  static async readNewArticle(
+    userData: UserData,
+    message: string
+  ): Promise<Scenario> {
     const currentArticle = await this.getCurrentArticle(userData);
     const nextSentence = currentArticle.currentSentence;
 
-    const speaker = Speaker.setUp(
-      conv,
-      userData.readingSpeed,
-      nextSentence,
-      Message.resultSkipped
-    );
-    speaker.setTitleAndPublisher(
-      currentArticle.title,
-      currentArticle.publisher
-    );
-    speaker.ask();
+    const reply = Scenario.setUp(userData.readingSpeed, nextSentence, message);
+    reply.setTitleAndPublisher(currentArticle.title, currentArticle.publisher);
+    return reply;
   }
 
-  static async sayAgain(conv: Conversation) {
+  static async sayAgain(userData: UserData): Promise<Scenario> {
     console.log("once again");
 
-    const userData = UserData.load(conv);
     const currentSentence = userData.currentSentence;
-    const speaker = Speaker.setUp(conv, userData.readingSpeed, currentSentence);
+    const reply = Scenario.setUp(userData.readingSpeed, currentSentence);
 
     if (currentSentence === "") {
       userData.reset();
@@ -91,19 +100,9 @@ export default class Scenario {
       throw new CurrentSentenceNotFound("Current sentence not found");
     }
 
-    speaker.speakSlowly();
-    speaker.addReply(Message.okay);
-    speaker.ask();
-  }
-
-  static errorRaised(conv: Conversation, error: ApplicationError) {
-    console.error(error);
-    conv.close(error.message);
-  }
-
-  static goodbye(conv: Conversation) {
-    console.log("goodbye");
-    conv.close(Message.bye);
+    reply.speakSlowly();
+    reply.addReply(Message.okay);
+    return reply;
   }
 
   private static canRetry(retryCount: number, result: AnswerResult): boolean {
@@ -134,5 +133,56 @@ export default class Scenario {
 
       throw error;
     }
+  }
+
+  speakSlowly() {
+    if (0 < this.readingSpeed) {
+      this.readingSpeed -= 1;
+    }
+  }
+
+  setSentence(value: string) {
+    this.sentence = value;
+  }
+
+  addReply(value: string) {
+    this.reply += value;
+  }
+
+  setTitleAndPublisher(title: string, publisher: string) {
+    this.title = title;
+    this.publisher = publisher;
+  }
+
+  private get body(): string {
+    let text = this.reply;
+    text += `${this.title} by ${this.publisher}`;
+
+    if (this.title !== "") {
+      text += SSML.addBreak(1);
+      text += `${this.title} by ${this.publisher}`;
+    }
+
+    text += this.sentence;
+
+    return text;
+  }
+
+  private get ssmlBody(): string {
+    let ssml = this.reply;
+
+    if (this.title !== "") {
+      ssml += SSML.addBreak(1);
+      ssml += `${this.title} by ${this.publisher}`;
+    }
+
+    if (this.sentence !== "") {
+      ssml += SSML.addBreak(1);
+      ssml += SSML.encloseSentence(
+        this.sentence,
+        READING_SPEED[this.readingSpeed]
+      );
+    }
+    return SSML.enclose(ssml);
   }
 }

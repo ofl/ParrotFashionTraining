@@ -57,6 +57,7 @@ export default class UserData {
     this.articleId = article.guid;
     this.retryCount = 0;
     this.currentSentence = article.currentSentence;
+    this.readingSpeed = Speaker.defaultReadingSpeed();
     this.save();
   }
 
