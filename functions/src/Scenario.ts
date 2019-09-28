@@ -154,21 +154,7 @@ export default class Scenario {
     this.publisher = publisher;
   }
 
-  private get body(): string {
-    let text = this.reply;
-    text += `${this.title} by ${this.publisher}`;
-
-    if (this.title !== "") {
-      text += SSML.addBreak(1);
-      text += `${this.title} by ${this.publisher}`;
-    }
-
-    text += this.sentence;
-
-    return text;
-  }
-
-  private get ssmlBody(): string {
+  get ssml(): string {
     let ssml = this.reply;
 
     if (this.title !== "") {

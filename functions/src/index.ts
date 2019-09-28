@@ -14,7 +14,8 @@ const app = dialogflow();
 app.intent("Default Welcome Intent", async conv => {
   try {
     const userData = UserData.load(conv);
-    await Scenario.welcome(userData);
+    const scenario = await Scenario.welcome(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
     console.error(error);
     conv.close(error.message);
@@ -25,7 +26,8 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
   try {
     const userData = UserData.load(conv);
     if (typeof answer !== "string" || answer === "") {
-      await Scenario.sayAgain(userData);
+      const scenario = await Scenario.sayAgain(userData);
+      conv.ask(scenario.ssml);
       return;
     }
 
@@ -39,7 +41,8 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
 app.intent("Skip Article Intent", async conv => {
   try {
     const userData = UserData.load(conv);
-    await Scenario.skipArticle(userData);
+    const scenario = await Scenario.skipArticle(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
     console.error(error);
     conv.close(error.message);
@@ -49,7 +52,8 @@ app.intent("Skip Article Intent", async conv => {
 app.intent("Say It Again Intent", async conv => {
   try {
     const userData = UserData.load(conv);
-    await Scenario.sayAgain(userData);
+    const scenario = await Scenario.sayAgain(userData);
+    conv.ask(scenario.ssml);
   } catch (error) {
     console.error(error);
     conv.close(error.message);
