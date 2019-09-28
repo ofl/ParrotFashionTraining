@@ -31,7 +31,8 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
       return;
     }
 
-    await Scenario.userAnswered(userData, answer);
+    const answered_scenario = await Scenario.userAnswered(userData, answer);
+    conv.ask(answered_scenario.ssml);
   } catch (error) {
     console.error(error);
     conv.close(error.message);

@@ -4,7 +4,7 @@ export default class SSML {
   }
 
   static encloseSentence(sentence: string, rate: string): string {
-    return `<s><prosody rate="${rate}">${sentence}</prosody></s>`;
+    return `<p><s><prosody rate="${rate}">${sentence}</prosody></s></p>`;
   }
 
   static addBreak(time: number = 0.5): string {

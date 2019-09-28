@@ -40,7 +40,7 @@ export default class Scenario {
     console.log("user answered");
 
     const currentSentence = userData.currentSentence;
-    const reply = Scenario.setUp(userData.readingSpeed, currentSentence);
+    const scenario = Scenario.setUp(userData.readingSpeed, currentSentence);
 
     if (currentSentence === "") {
       userData.reset();
@@ -49,25 +49,25 @@ export default class Scenario {
     }
 
     const answerResult = AnswerResult.get(currentSentence, answer);
-    reply.addReply(Message.getResultMessage(answerResult));
+    scenario.addReply(Message.getResultMessage(answerResult));
 
     if (this.canRetry(userData.retryCount, answerResult)) {
-      reply.speakSlowly();
+      scenario.speakSlowly();
       userData.incrementRetryCount();
-      userData.setReadingSpeed(reply.readingSpeed);
+      userData.setReadingSpeed(scenario.readingSpeed);
     } else {
       const currentArticle = await this.getCurrentArticle(userData);
       const nextSentence = currentArticle.currentSentence;
-      reply.setSentence(nextSentence);
+      scenario.setSentence(nextSentence);
       if (currentArticle.currentIndex === 0) {
-        reply.setTitleAndPublisher(
+        scenario.setTitleAndPublisher(
           currentArticle.title,
           currentArticle.publisher
         );
       }
     }
 
-    return reply;
+    return scenario;
   }
 
   static async skipArticle(userData: UserData): Promise<Scenario> {
@@ -83,16 +83,23 @@ export default class Scenario {
     const currentArticle = await this.getCurrentArticle(userData);
     const nextSentence = currentArticle.currentSentence;
 
-    const reply = Scenario.setUp(userData.readingSpeed, nextSentence, message);
-    reply.setTitleAndPublisher(currentArticle.title, currentArticle.publisher);
-    return reply;
+    const scenario = Scenario.setUp(
+      userData.readingSpeed,
+      nextSentence,
+      message
+    );
+    scenario.setTitleAndPublisher(
+      currentArticle.title,
+      currentArticle.publisher
+    );
+    return scenario;
   }
 
   static async sayAgain(userData: UserData): Promise<Scenario> {
     console.log("once again");
 
     const currentSentence = userData.currentSentence;
-    const reply = Scenario.setUp(userData.readingSpeed, currentSentence);
+    const scenario = Scenario.setUp(userData.readingSpeed, currentSentence);
 
     if (currentSentence === "") {
       userData.reset();
@@ -100,9 +107,9 @@ export default class Scenario {
       throw new CurrentSentenceNotFound("Current sentence not found");
     }
 
-    reply.speakSlowly();
-    reply.addReply(Message.okay);
-    return reply;
+    scenario.speakSlowly();
+    scenario.addReply(Message.okay);
+    return scenario;
   }
 
   private static canRetry(retryCount: number, result: AnswerResult): boolean {
@@ -155,12 +162,16 @@ export default class Scenario {
   }
 
   get ssml(): string {
-    let ssml = this.reply;
+    let ssml = `<p>`;
+    ssml += `<s>${this.reply}</s>`;
 
     if (this.title !== "") {
       ssml += SSML.addBreak(1);
-      ssml += `${this.title} by ${this.publisher}`;
+      ssml += `<s>Next title is "${this.title}" from ${this.publisher}.</s>`;
+      ssml += `<s>Repeat after me.</s>`;
     }
+
+    ssml += `</p>`;
 
     if (this.sentence !== "") {
       ssml += SSML.addBreak(1);
@@ -169,6 +180,7 @@ export default class Scenario {
         READING_SPEED[this.readingSpeed]
       );
     }
+
     return SSML.enclose(ssml);
   }
 }

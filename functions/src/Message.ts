@@ -2,7 +2,7 @@ import Utils from "./Utils";
 import AnswerResult from "./AnswerResult";
 
 class GreetingMessage {
-  static readonly WELCOME: string[] = ["Welcome to repeat after me."];
+  static readonly WELCOME: string[] = ["Welcome to Parrot Fashion Training."];
   static readonly GOODBYE: string[] = ["Goodbye.", "Bye.", "See you again."];
   static readonly YELL: string[] = [
     "Let's start.",
