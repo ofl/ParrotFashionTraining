@@ -24,6 +24,7 @@ class ResultMessage {
   static readonly GOOD: string[] = ["OK!", "Good job!", "Well done!"];
   static readonly REGRETTABLE: string[] = ["So close!", "Almost had it!"];
   static readonly POOR: string[] = [
+    "All right!",
     "Don't mind!",
     "Let's do your best next time!"
   ];

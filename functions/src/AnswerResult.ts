@@ -1,14 +1,14 @@
 import Utils from "./Utils";
 
 const REGRETTABLE_LEVEL: number = 60;
-const GOOD_LEVEL: number = 80;
-const PERFECT_LEVEL: number = 100;
+const GOOD_LEVEL: number = 75;
+const PERFECT_LEVEL: number = 90;
 
 export default class AnswerResult {
   constructor(private percentage: number) {}
 
   static get(currentSentence: string, answer: string): AnswerResult {
-    const percentage = Utils.percentageOfSimilarity(currentSentence, answer);
+    const percentage = Utils.textSimilarity(currentSentence, answer);
 
     return new AnswerResult(percentage);
   }

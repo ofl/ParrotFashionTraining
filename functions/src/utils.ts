@@ -1,21 +1,22 @@
 const crypto = require("crypto");
+const levenshtein = require("js-levenshtein");
 
 export default class Utils {
   static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
     return new Date().getTime() - 60 * 60 * 24 * 1000 * days;
   }
 
-  static percentageOfSimilarity(
+  static textSimilarity(
     originalSentence: string,
     targetSentence: string
   ): number {
-    const originalWords = new Set(this.sentenceToWordArray(originalSentence));
-    const targetWords = new Set(this.sentenceToWordArray(targetSentence));
-    const intersection = new Set(
-      [...originalWords].filter(e => targetWords.has(e))
-    );
+    const result: number = levenshtein(originalSentence, targetSentence);
+    const originalSentenceLength = originalSentence.length;
+    const difference: number = Math.max(result - originalSentenceLength / 5, 0);
+    const rate =
+      ((originalSentenceLength - difference) / originalSentenceLength) * 100;
 
-    return Math.round((intersection.size / originalWords.size) * 100);
+    return Math.floor(rate);
   }
 
   static md5hex(str: string) {
@@ -39,16 +40,5 @@ export default class Utils {
 
   static selectRandomly<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
-  }
-
-  private static sentenceToWordArray(sentence: string): string[] {
-    const words = sentence.match(/\S+/g);
-    if (words === null) {
-      return [];
-    }
-
-    return words.map(word => {
-      return word.toLowerCase();
-    });
   }
 }

@@ -3,6 +3,7 @@
         "conv",
         "dialogflow",
         "firestore",
+        "hulu",
         "nytimes",
         "pubsub",
         "splitted",
