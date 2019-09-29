@@ -1,4 +1,4 @@
-import { Conversation } from "./interfaces";
+import { DialogflowConversation, Contexts } from "actions-on-google";
 import Article from "./Article";
 import Scenario from "./Scenario";
 
@@ -7,14 +7,14 @@ export default class UserData {
   private static instance: UserData;
 
   private constructor(
-    private conv: Conversation,
+    private conv: DialogflowConversation<unknown, unknown, Contexts>,
     public articleId: string,
     public currentSentence: string,
     public retryCount: number,
     public readingSpeed: number
   ) {}
 
-  static load(conv: Conversation) {
+  static load(conv: DialogflowConversation<unknown, unknown, Contexts>) {
     if (!this.instance) {
       const data = conv.data as {
         articleId: string;

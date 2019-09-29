@@ -1,3 +1,4 @@
+import * as moment from "moment";
 import UserData from "./UserData";
 import Article from "./Article";
 import Message from "./Message";
@@ -11,6 +12,7 @@ const READING_SPEED: string[] = ["x-slow", "slow", "medium", "fast", "x-fast"];
 export default class Scenario {
   private publisher: string = "";
   private title: string = "";
+  private unixtime: number = 0;
 
   constructor(
     public readingSpeed: number,
@@ -62,7 +64,8 @@ export default class Scenario {
       if (currentArticle.currentIndex === 0) {
         scenario.setTitleAndPublisher(
           currentArticle.title,
-          currentArticle.publisher
+          currentArticle.publisher,
+          currentArticle.unixtime
         );
       }
     }
@@ -90,7 +93,8 @@ export default class Scenario {
     );
     scenario.setTitleAndPublisher(
       currentArticle.title,
-      currentArticle.publisher
+      currentArticle.publisher,
+      currentArticle.unixtime
     );
     return scenario;
   }
@@ -156,9 +160,10 @@ export default class Scenario {
     this.reply += value;
   }
 
-  setTitleAndPublisher(title: string, publisher: string) {
+  setTitleAndPublisher(title: string, publisher: string, unixtime: number) {
     this.title = title;
     this.publisher = publisher;
+    this.unixtime = unixtime;
   }
 
   get ssml(): string {
@@ -167,7 +172,8 @@ export default class Scenario {
 
     if (this.title !== "") {
       ssml += SSML.addBreak(1);
-      ssml += `<s>Next title is "${this.title}" from ${this.publisher}.</s>`;
+      ssml += `<s>Next title is "${this.title}" from ${this.publisher} `;
+      ssml += `${moment.unix(this.unixtime / 1000).fromNow()}.</s>`;
       ssml += `<s>Repeat after me.</s>`;
     }
 
