@@ -10,7 +10,8 @@ describe(".run", () => {
 
     assert.sameMembers(TextSplitter.run(testText), [
       "Democrats and recommend Republicans at both the federal",
-      " and state levels are uniting to investigate the power of Big Tech and, potentially, ",
+      " and state levels are uniting",
+      " to investigate the power of Big Tech and, potentially, ",
       "to rein in the dominant companies."
     ]);
   });
@@ -34,7 +35,8 @@ describe(".run", () => {
     assert.sameMembers(TextSplitter.run(testText), [
       "Hackers have been targeting regular people",
       " and celebrities with the attack.Last week, ",
-      "it was used to hijack the Twitter account of Twitter’s C.E.O."
+      "it was used",
+      " to hijack the Twitter account of Twitter’s C.E.O."
     ]);
   });
 
@@ -43,7 +45,8 @@ describe(".run", () => {
       "As Bangladesh vowed to cut off mobile phone access in Rohingya camps, refugees who fled terror in Myanmar despaired over their future.";
 
     assert.sameMembers(TextSplitter.run(testText), [
-      "As Bangladesh vowed to cut off mobile phone access in Rohingya camps, refugees",
+      "As Bangladesh vowed",
+      " to cut off mobile phone access in Rohingya camps, refugees",
       " who fled terror in Myanmar despaired over their future."
     ]);
   });
@@ -81,7 +84,10 @@ describe(".run", () => {
 
   it("文章が適切な位置で分割されること8", () => {
     const testText = "A New TV Show from The New York Times on FX and Hulu";
-    assert.sameMembers(TextSplitter.run(testText), [testText]);
+    assert.sameMembers(TextSplitter.run(testText), [
+      "A New TV Show",
+      " from The New York Times on FX and Hulu"
+    ]);
   });
 });
 

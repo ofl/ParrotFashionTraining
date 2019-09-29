@@ -1,8 +1,17 @@
 const Tokenizer = require("sentence-tokenizer");
 
-const PUNCTUATIONS = [","];
-const INTERROGATIVES = ["what", "who", "where", "when", "why", "how", "whose"];
-const CONJUNCTIONS = [
+const MIN_WORDS_LENGTH = 3;
+const PUNCTUATIONS: string[] = [","];
+const INTERROGATIVES: string[] = [
+  "what",
+  "who",
+  "where",
+  "when",
+  "why",
+  "how",
+  "whose"
+];
+const CONJUNCTIONS: string[] = [
   "and",
   "after",
   "also",
@@ -17,6 +26,28 @@ const CONJUNCTIONS = [
   "unless",
   "until"
 ];
+const PREPOSITIONS: string[] = [
+  "about",
+  "as",
+  "at",
+  "between",
+  "during",
+  "for",
+  "from",
+  "in",
+  "on",
+  "over",
+  "regarding",
+  "since",
+  "till",
+  "to",
+  "under",
+  "unless",
+  "until",
+  "with",
+  "within",
+  "without"
+];
 
 export default class TextSplitter {
   static run(text: string): string[] {
@@ -24,6 +55,7 @@ export default class TextSplitter {
     sentences = this.splitSentencesWithPunctuations(sentences, PUNCTUATIONS);
     sentences = this.splitSentencesWithDelimiters(sentences, INTERROGATIVES);
     sentences = this.splitSentencesWithDelimiters(sentences, CONJUNCTIONS);
+    sentences = this.splitSentencesWithDelimiters(sentences, PREPOSITIONS);
 
     return sentences;
   }
@@ -81,10 +113,10 @@ export default class TextSplitter {
       }
 
       if (
-        this.isShortEnough(currentText, 3) ||
-        this.isShortEnough(text, 3) ||
+        this.isShortEnough(currentText, MIN_WORDS_LENGTH) ||
+        this.isShortEnough(text, MIN_WORDS_LENGTH) ||
         (/,\s$/.test(currentText) &&
-          ((this.isShortEnough(text, 3) && /,\s$/.test(text)) ||
+          ((this.isShortEnough(text, MIN_WORDS_LENGTH) && /,\s$/.test(text)) ||
             /^\s*and\s/.test(text)))
       ) {
         currentText += text;
