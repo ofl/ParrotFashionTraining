@@ -1,24 +1,29 @@
 import Utils from "./Utils";
 import Crawler from "./Crawler";
 import Article from "./Article";
+import * as moment from "moment";
 
 export default class Batch {
-  static async createArticlesFromRSS(days: number = 3) {
+  static async createArticlesFromRSS(days: number = 1) {
     const articles = await Crawler.getFeedContents(
       "http://feeds.nytimes.com/nyt/rss/Technology"
     );
 
-    const unixtime: number = Utils.getUnixtimeOfDaysBeforeNow(days);
+    const epochMS: number = moment()
+      .add(-days, "day")
+      .unix();
     const currentArticles = articles.filter(
-      article => article.unixtime > unixtime
+      article => article.epochMS > epochMS
     );
 
     return Article.batchCreate(currentArticles);
   }
 
-  static async deleteOldArticles(days: number = 3): Promise<void> {
-    const unixtime: number = Utils.getUnixtimeOfDaysBeforeNow(days);
-    const snapshot = await Article.getBefore(unixtime).get();
+  static async deleteOldArticles(days: number = 1): Promise<void> {
+    const epochMS: number = moment()
+      .add(-days, "day")
+      .unix();
+    const snapshot = await Article.getBefore(epochMS).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");

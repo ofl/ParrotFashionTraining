@@ -6,13 +6,13 @@ import AnswerResult from "./AnswerResult";
 import SSML from "./SSML";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
 
-const MAX_RETRY_COUNT = 2;
 const DEFAULT_READING_SPEED: number = 100; // (%)
+const MAX_RETRY_COUNT = 3;
 
 export default class Scenario {
   private publisher: string = "";
   private title: string = "";
-  private unixtime: number = 0;
+  private epochMS: number = 0;
 
   constructor(
     public readingSpeed: number,
@@ -66,7 +66,7 @@ export default class Scenario {
         scenario.setTitleAndPublisher(
           article.title,
           article.publisher,
-          article.unixtime
+          article.epochMS
         );
       }
     }
@@ -95,7 +95,7 @@ export default class Scenario {
     scenario.setTitleAndPublisher(
       currentArticle.title,
       currentArticle.publisher,
-      currentArticle.unixtime
+      currentArticle.epochMS
     );
     return scenario;
   }
@@ -161,10 +161,10 @@ export default class Scenario {
     this.reply += value;
   }
 
-  setTitleAndPublisher(title: string, publisher: string, unixtime: number) {
+  setTitleAndPublisher(title: string, publisher: string, epochMS: number) {
     this.title = title;
     this.publisher = publisher;
-    this.unixtime = unixtime;
+    this.epochMS = epochMS;
   }
 
   get ssml(): string {
@@ -174,7 +174,8 @@ export default class Scenario {
     if (this.title !== "") {
       ssml += SSML.addBreak(1);
       ssml += `<s>Next title is "${this.title}" from ${this.publisher} `;
-      ssml += `${moment.unix(this.unixtime / 1000).fromNow()}.</s>`;
+      ssml += `${moment(this.epochMS).fromNow()}.</s>`;
+      ssml += SSML.addBreak(0.5);
       ssml += `<s>Repeat after me.</s>`;
     }
 

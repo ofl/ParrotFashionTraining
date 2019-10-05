@@ -2,10 +2,6 @@ const crypto = require("crypto");
 const levenshtein = require("js-levenshtein");
 
 export default class Utils {
-  static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
-    return new Date().getTime() - 60 * 60 * 24 * 1000 * days;
-  }
-
   static textSimilarity(
     originalSentence: string,
     targetSentence: string

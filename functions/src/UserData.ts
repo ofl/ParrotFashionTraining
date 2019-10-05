@@ -21,7 +21,6 @@ export default class UserData {
         currentSentence: string;
         retryCount: number;
         readingSpeed: number;
-        lastReadUnixtime: number;
       };
 
       this.instance = new this(
@@ -72,22 +71,3 @@ export default class UserData {
     return this.articleId === "";
   }
 }
-
-// ユーザーが「Voice Match でアカウントに基づく情報を受け取る」場合
-// function loadUserDataFromStorage(conv: Conversation): UserData {
-//   const storage = conv.user.storage as UserData;
-//   if (
-//     typeof storage.repeatCount !== "undefined" &&
-//     typeof storage.lastReadUnixtime !== "undefined"
-//   ) {
-//     return storage;
-//   }
-
-//   const userData: UserData = {
-//     repeatCount: storage.repeatCount || 0,
-//     lastReadUnixtime: storage.lastReadUnixtime || new Date().getTime()
-//   };
-//   conv.user.storage = userData;
-
-//   return userData;
-// }
