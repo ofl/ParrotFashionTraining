@@ -6,13 +6,13 @@ import AnswerResult from "./AnswerResult";
 import SSML from "./SSML";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
 
-const MAX_RETRY_COUNT = 2;
-const READING_SPEED: string[] = ["x-slow", "slow", "medium", "fast", "x-fast"];
+const DEFAULT_READING_SPEED: number = 100; // (%)
+const MAX_RETRY_COUNT = 3;
 
 export default class Scenario {
   private publisher: string = "";
   private title: string = "";
-  private unixtime: number = 0;
+  private epochMS: number = 0;
 
   constructor(
     public readingSpeed: number,
@@ -21,19 +21,20 @@ export default class Scenario {
   ) {}
 
   static setUp(
-    readingSpeed: number = Scenario.defaultReadingSpeed(),
+    readingSpeed: number = this.defaultReadingSpeed,
     sentence: string = "",
     reply: string = ""
   ): Scenario {
     return new this(readingSpeed, sentence, reply);
   }
 
-  static defaultReadingSpeed(): number {
-    return READING_SPEED.indexOf("medium");
+  static get defaultReadingSpeed(): number {
+    return DEFAULT_READING_SPEED;
   }
 
   static async welcome(userData: UserData): Promise<Scenario> {
     console.log("welcome");
+    userData.reset();
 
     return await this.readNewArticle(userData, Message.welcome);
   }
@@ -58,14 +59,14 @@ export default class Scenario {
       userData.incrementRetryCount();
       userData.setReadingSpeed(scenario.readingSpeed);
     } else {
-      const currentArticle = await this.getCurrentArticle(userData);
-      const nextSentence = currentArticle.currentSentence;
+      const article = await this.getArticle(userData);
+      const nextSentence = article.currentSentence;
       scenario.setSentence(nextSentence);
-      if (currentArticle.currentIndex === 0) {
+      if (article.currentIndex === 0) {
         scenario.setTitleAndPublisher(
-          currentArticle.title,
-          currentArticle.publisher,
-          currentArticle.unixtime
+          article.title,
+          article.publisher,
+          article.epochMS
         );
       }
     }
@@ -83,7 +84,7 @@ export default class Scenario {
     userData: UserData,
     message: string
   ): Promise<Scenario> {
-    const currentArticle = await this.getCurrentArticle(userData);
+    const currentArticle = await this.getArticle(userData);
     const nextSentence = currentArticle.currentSentence;
 
     const scenario = Scenario.setUp(
@@ -94,7 +95,7 @@ export default class Scenario {
     scenario.setTitleAndPublisher(
       currentArticle.title,
       currentArticle.publisher,
-      currentArticle.unixtime
+      currentArticle.epochMS
     );
     return scenario;
   }
@@ -123,13 +124,13 @@ export default class Scenario {
     return result.isPoor || result.isRegrettable;
   }
 
-  private static async getCurrentArticle(userData: UserData): Promise<Article> {
+  private static async getArticle(userData: UserData): Promise<Article> {
     try {
       let article: Article;
       if (userData.isEmpty) {
-        article = await Article.getNext();
+        article = await Article.getLatest();
       } else {
-        article = await Article.getNextOrIncrementCurrentIndex(
+        article = await Article.getNextArticleOrIncrementIndex(
           userData.articleId,
           userData.currentSentence
         );
@@ -147,8 +148,8 @@ export default class Scenario {
   }
 
   speakSlowly() {
-    if (0 < this.readingSpeed) {
-      this.readingSpeed -= 1;
+    if (this.readingSpeed > 70) {
+      this.readingSpeed -= 15;
     }
   }
 
@@ -160,10 +161,10 @@ export default class Scenario {
     this.reply += value;
   }
 
-  setTitleAndPublisher(title: string, publisher: string, unixtime: number) {
+  setTitleAndPublisher(title: string, publisher: string, epochMS: number) {
     this.title = title;
     this.publisher = publisher;
-    this.unixtime = unixtime;
+    this.epochMS = epochMS;
   }
 
   get ssml(): string {
@@ -173,7 +174,8 @@ export default class Scenario {
     if (this.title !== "") {
       ssml += SSML.addBreak(1);
       ssml += `<s>Next title is "${this.title}" from ${this.publisher} `;
-      ssml += `${moment.unix(this.unixtime / 1000).fromNow()}.</s>`;
+      ssml += `${moment(this.epochMS).fromNow()}.</s>`;
+      ssml += SSML.addBreak(0.5);
       ssml += `<s>Repeat after me.</s>`;
     }
 

@@ -2,6 +2,7 @@ import * as firebase from "firebase-admin";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
 import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
 import Utils from "./Utils";
+import * as moment from "moment";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
@@ -12,7 +13,7 @@ const NEWS_SOURCES: { [key: string]: string } = {
 };
 
 export default class Article {
-  readonly unixtime: number;
+  readonly epochMS: number;
   currentIndex: number;
 
   constructor(
@@ -20,10 +21,11 @@ export default class Article {
     readonly title: string,
     readonly body: string,
     readonly sentences: string[],
+    readonly maxWordCount: number,
     readonly creator: string,
     isoDate: string
   ) {
-    this.unixtime = new Date(isoDate).getTime();
+    this.epochMS = moment(isoDate).unix();
     this.currentIndex = 0;
   }
 
@@ -58,13 +60,13 @@ export default class Article {
     await batch.commit();
   }
 
-  static async getNext(): Promise<Article> {
-    const query = this.getQuery(Utils.getUnixtimeOfDaysBeforeNow(1));
+  static async getLatest(): Promise<Article> {
+    const query = this.getBefore(moment().unix());
 
     return await this.load(query);
   }
 
-  static async getNextOrIncrementCurrentIndex(
+  static async getNextArticleOrIncrementIndex(
     articleId: string,
     currentSentence: string
   ): Promise<Article> {
@@ -77,7 +79,7 @@ export default class Article {
       return currentArticle;
     }
 
-    const query = this.getQuery(currentArticle.unixtime, ">");
+    const query = this.getBefore(currentArticle.epochMS);
 
     return await this.load(query);
   }
@@ -97,17 +99,18 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
+        data.maxWordCount,
         data.creator,
-        data.unixtime
+        data.epochMS
       );
     }
   }
 
-  static getQuery(unixtime: number, opStr: WhereFilterOp = ">="): Query {
+  static getBefore(epochMS: number, opStr: WhereFilterOp = "<"): Query {
     return firestore
       .collection(ARTICLE_COLLECTION_PATH)
-      .where("unixtime", opStr, unixtime)
-      .orderBy("unixtime");
+      .where("epochMS", opStr, epochMS)
+      .orderBy("epochMS", "desc");
   }
 
   private static async load(query: Query): Promise<Article> {
@@ -131,8 +134,9 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
+        data.maxWordCount,
         data.creator,
-        data.unixtime
+        data.epochMS
       );
     });
   }
@@ -144,7 +148,7 @@ export default class Article {
       body: this.body,
       sentences: this.sentences,
       creator: this.creator,
-      unixtime: this.unixtime
+      epochMS: this.epochMS
     };
   }
 

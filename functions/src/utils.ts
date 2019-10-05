@@ -2,17 +2,13 @@ const crypto = require("crypto");
 const levenshtein = require("js-levenshtein");
 
 export default class Utils {
-  static getUnixtimeOfDaysBeforeNow(days: number = 1): number {
-    return new Date().getTime() - 60 * 60 * 24 * 1000 * days;
-  }
-
   static textSimilarity(
     originalSentence: string,
     targetSentence: string
   ): number {
     const result: number = levenshtein(originalSentence, targetSentence);
     const originalSentenceLength = originalSentence.length;
-    const difference: number = Math.max(result - originalSentenceLength / 5, 0);
+    const difference: number = Math.max(result - originalSentenceLength / 8, 0);
     const rate =
       ((originalSentenceLength - difference) / originalSentenceLength) * 100;
 
@@ -40,5 +36,21 @@ export default class Utils {
 
   static selectRandomly<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
+  }
+
+  static maxWordCountInSentences(sentences: string[]): number {
+    let maxWordCount = 0;
+
+    sentences.forEach(sentence => {
+      const wordCount = this.countWord(sentence);
+      if (maxWordCount < wordCount) {
+        maxWordCount = wordCount;
+      }
+    });
+    return maxWordCount;
+  }
+
+  static countWord(text: string): number {
+    return text.split(/\b\s\b/).length;
   }
 }

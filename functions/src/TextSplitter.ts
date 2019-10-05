@@ -1,6 +1,10 @@
+import Utils from "./Utils";
+
 const Tokenizer = require("sentence-tokenizer");
 
-const MIN_WORDS_LENGTH = 3;
+const MIN_WORD_COUNT = 2;
+const MAX_WORDS_COUNT = 9;
+
 const PUNCTUATIONS: string[] = [","];
 const INTERROGATIVES: string[] = [
   "what",
@@ -53,9 +57,12 @@ export default class TextSplitter {
   static run(text: string): string[] {
     let sentences = this.textToSentences(text);
     sentences = this.splitSentencesWithPunctuations(sentences, PUNCTUATIONS);
-    sentences = this.splitSentencesWithDelimiters(sentences, INTERROGATIVES);
-    sentences = this.splitSentencesWithDelimiters(sentences, CONJUNCTIONS);
-    sentences = this.splitSentencesWithDelimiters(sentences, PREPOSITIONS);
+    sentences = this.splitSentencesWithSeparatorWords(
+      sentences,
+      INTERROGATIVES
+    );
+    sentences = this.splitSentencesWithSeparatorWords(sentences, CONJUNCTIONS);
+    sentences = this.splitSentencesWithSeparatorWords(sentences, PREPOSITIONS);
 
     return sentences;
   }
@@ -81,19 +88,23 @@ export default class TextSplitter {
     return this.rejoinText(result);
   }
 
-  private static splitSentencesWithDelimiters(
+  private static splitSentencesWithSeparatorWords(
     sentences: string[],
-    delimiters: string[]
+    separatorWords: string[]
   ): string[] {
     const result: string[] = [];
 
     sentences.forEach(sentence => {
-      const matchedDelimiters = this.matchedDelimiters(sentence, delimiters);
-      this.splitSentenceWithDelimiters(sentence, matchedDelimiters).forEach(
-        splittedSentence => {
-          result.push(splittedSentence);
-        }
+      const matchedSeparatorWords = this.matchedSeparatorWords(
+        sentence,
+        separatorWords
       );
+      this.splitSentenceWithSeparatorWords(
+        sentence,
+        matchedSeparatorWords
+      ).forEach(splittedSentence => {
+        result.push(splittedSentence);
+      });
     });
 
     return this.rejoinText(result);
@@ -113,10 +124,10 @@ export default class TextSplitter {
       }
 
       if (
-        this.isShortEnough(currentText, MIN_WORDS_LENGTH) ||
-        this.isShortEnough(text, MIN_WORDS_LENGTH) ||
+        this.isTooShort(currentText) ||
+        this.isTooShort(text) ||
         (/,\s$/.test(currentText) &&
-          ((this.isShortEnough(text, MIN_WORDS_LENGTH) && /,\s$/.test(text)) ||
+          ((this.isTooShort(text) && /,\s$/.test(text)) ||
             /^\s*and\s/.test(text)))
       ) {
         currentText += text;
@@ -136,12 +147,11 @@ export default class TextSplitter {
   private static splitSentenceWithPunctuations(
     sentence: string,
     punctuations: string[],
-    minLength: number = 10,
     depth: number = 0
   ): string[] {
     const punctuation = punctuations[depth];
 
-    if (punctuation == null || this.isShortEnough(sentence, minLength)) {
+    if (punctuation == null || this.isShortEnough(sentence)) {
       return [sentence];
     }
     const array = this.splitTextWithPunctuation(sentence, punctuation);
@@ -151,7 +161,6 @@ export default class TextSplitter {
       this.splitSentenceWithPunctuations(
         splittedSentence,
         punctuations,
-        minLength,
         depth + 1
       ).forEach(splittedSplittedSentence => {
         result.push(splittedSplittedSentence);
@@ -160,25 +169,23 @@ export default class TextSplitter {
     return result;
   }
 
-  private static splitSentenceWithDelimiters(
+  private static splitSentenceWithSeparatorWords(
     sentence: string,
-    delimiters: string[],
-    minLength: number = 10,
+    separatorWords: string[],
     depth: number = 0
   ): string[] {
-    const delimiter = delimiters[depth];
+    const separatorWord = separatorWords[depth];
 
-    if (delimiter == null || this.isShortEnough(sentence, minLength)) {
+    if (separatorWord == null || this.isShortEnough(sentence)) {
       return [sentence];
     }
-    const array = this.splitTextWithDelimiter(sentence, delimiter);
+    const array = this.splitTextWithSeparatorWord(sentence, separatorWord);
 
     const result: string[] = [];
     array.forEach(splittedSentence => {
-      this.splitSentenceWithDelimiters(
+      this.splitSentenceWithSeparatorWords(
         splittedSentence,
-        delimiters,
-        minLength,
+        separatorWords,
         depth + 1
       ).forEach(splittedSplittedSentence => {
         result.push(splittedSplittedSentence);
@@ -194,8 +201,18 @@ export default class TextSplitter {
     return tokenizer.getSentences();
   }
 
-  private static isShortEnough(text: string, minLength: number = 10): boolean {
-    return text.split(/\b\s\b/).length < minLength;
+  private static isShortEnough(
+    text: string,
+    maxWordCount: number = MAX_WORDS_COUNT
+  ): boolean {
+    return this.wordCountFewerThan(text, maxWordCount);
+  }
+
+  private static isTooShort(
+    text: string,
+    minWordCount: number = MIN_WORD_COUNT
+  ): boolean {
+    return this.wordCountFewerThan(text, minWordCount);
   }
 
   private static isLastIndex(arr: string[], index: number): boolean {
@@ -214,13 +231,13 @@ export default class TextSplitter {
     });
   }
 
-  private static splitTextWithDelimiter(
+  private static splitTextWithSeparatorWord(
     text: string,
-    delimiter: string
+    separatorWord: string
   ): string[] {
-    const regex = new RegExp(this.delimiterRegexStr(delimiter));
+    const regex = new RegExp(this.separatorWordRegexStr(separatorWord));
     return text.split(regex).map((splittedText, index) => {
-      return index === 0 ? splittedText : ` ${delimiter} ${splittedText}`;
+      return index === 0 ? splittedText : ` ${separatorWord} ${splittedText}`;
     });
   }
 
@@ -237,13 +254,13 @@ export default class TextSplitter {
     return this.matched(text, regexStr);
   }
 
-  private static matchedDelimiters(
+  private static matchedSeparatorWords(
     text: string,
-    delimiters: string[]
+    separatorWords: string[]
   ): string[] {
-    const regexStr = delimiters
-      .map(delimiter => {
-        return this.delimiterRegexStr(delimiter);
+    const regexStr = separatorWords
+      .map(separatorWord => {
+        return this.separatorWordRegexStr(separatorWord);
       })
       .join("|");
 
@@ -259,11 +276,15 @@ export default class TextSplitter {
         });
   }
 
-  private static delimiterRegexStr(delimiter: string): string {
-    return `(?=\\b)(?:\\s)${delimiter}\\s(?=\\b)`;
+  private static separatorWordRegexStr(separatorWord: string): string {
+    return `(?=\\b)(?:\\s)${separatorWord}\\s(?=\\b)`;
   }
 
   private static punctuationRegexStr(punctuation: string): string {
     return `(?=\\b)${punctuation}\\s(?=\\b)`;
+  }
+
+  private static wordCountFewerThan(text: string, count: number): boolean {
+    return Utils.countWord(text) <= count;
   }
 }
