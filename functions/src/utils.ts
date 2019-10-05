@@ -12,7 +12,7 @@ export default class Utils {
   ): number {
     const result: number = levenshtein(originalSentence, targetSentence);
     const originalSentenceLength = originalSentence.length;
-    const difference: number = Math.max(result - originalSentenceLength / 5, 0);
+    const difference: number = Math.max(result - originalSentenceLength / 8, 0);
     const rate =
       ((originalSentenceLength - difference) / originalSentenceLength) * 100;
 
@@ -40,5 +40,9 @@ export default class Utils {
 
   static selectRandomly<T>(array: T[]): T {
     return array[Math.floor(Math.random() * array.length)];
+  }
+
+  static countWord(text: string): number {
+    return text.split(/\b\s\b/).length;
   }
 }

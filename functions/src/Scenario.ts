@@ -7,7 +7,7 @@ import SSML from "./SSML";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
 
 const MAX_RETRY_COUNT = 2;
-const READING_SPEED: string[] = ["x-slow", "slow", "medium", "fast", "x-fast"];
+const DEFAULT_READING_SPEED: number = 100; // (%)
 
 export default class Scenario {
   private publisher: string = "";
@@ -21,15 +21,15 @@ export default class Scenario {
   ) {}
 
   static setUp(
-    readingSpeed: number = Scenario.defaultReadingSpeed(),
+    readingSpeed: number = this.defaultReadingSpeed,
     sentence: string = "",
     reply: string = ""
   ): Scenario {
     return new this(readingSpeed, sentence, reply);
   }
 
-  static defaultReadingSpeed(): number {
-    return READING_SPEED.indexOf("medium");
+  static get defaultReadingSpeed(): number {
+    return DEFAULT_READING_SPEED;
   }
 
   static async welcome(userData: UserData): Promise<Scenario> {
@@ -148,8 +148,8 @@ export default class Scenario {
   }
 
   speakSlowly() {
-    if (0 < this.readingSpeed) {
-      this.readingSpeed -= 1;
+    if (this.readingSpeed > 70) {
+      this.readingSpeed -= 15;
     }
   }
 

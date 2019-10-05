@@ -29,7 +29,7 @@ export default class UserData {
         data.articleId || "",
         data.currentSentence || "",
         data.retryCount || 0,
-        data.readingSpeed || Scenario.defaultReadingSpeed()
+        data.readingSpeed || Scenario.defaultReadingSpeed
       );
     }
     return this.instance;
@@ -57,7 +57,7 @@ export default class UserData {
     this.articleId = article.guid;
     this.retryCount = 0;
     this.currentSentence = article.currentSentence;
-    this.readingSpeed = Scenario.defaultReadingSpeed();
+    this.readingSpeed = Scenario.defaultReadingSpeed;
     this.save();
   }
 
