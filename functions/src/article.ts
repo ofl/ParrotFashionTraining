@@ -58,13 +58,13 @@ export default class Article {
     await batch.commit();
   }
 
-  static async getNext(): Promise<Article> {
-    const query = this.getQuery(Utils.getUnixtimeOfDaysBeforeNow(1));
+  static async getLatest(): Promise<Article> {
+    const query = this.getBefore(new Date().getTime());
 
     return await this.load(query);
   }
 
-  static async getNextOrIncrementCurrentIndex(
+  static async getNextArticleOrIncrementIndex(
     articleId: string,
     currentSentence: string
   ): Promise<Article> {
@@ -77,7 +77,7 @@ export default class Article {
       return currentArticle;
     }
 
-    const query = this.getQuery(currentArticle.unixtime, ">");
+    const query = this.getBefore(currentArticle.unixtime);
 
     return await this.load(query);
   }
@@ -103,11 +103,11 @@ export default class Article {
     }
   }
 
-  static getQuery(unixtime: number, opStr: WhereFilterOp = ">="): Query {
+  static getBefore(unixtime: number, opStr: WhereFilterOp = "<"): Query {
     return firestore
       .collection(ARTICLE_COLLECTION_PATH)
       .where("unixtime", opStr, unixtime)
-      .orderBy("unixtime");
+      .orderBy("unixtime", "desc");
   }
 
   private static async load(query: Query): Promise<Article> {

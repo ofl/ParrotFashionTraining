@@ -34,6 +34,7 @@ export default class Scenario {
 
   static async welcome(userData: UserData): Promise<Scenario> {
     console.log("welcome");
+    userData.reset();
 
     return await this.readNewArticle(userData, Message.welcome);
   }
@@ -58,14 +59,14 @@ export default class Scenario {
       userData.incrementRetryCount();
       userData.setReadingSpeed(scenario.readingSpeed);
     } else {
-      const currentArticle = await this.getCurrentArticle(userData);
-      const nextSentence = currentArticle.currentSentence;
+      const article = await this.getArticle(userData);
+      const nextSentence = article.currentSentence;
       scenario.setSentence(nextSentence);
-      if (currentArticle.currentIndex === 0) {
+      if (article.currentIndex === 0) {
         scenario.setTitleAndPublisher(
-          currentArticle.title,
-          currentArticle.publisher,
-          currentArticle.unixtime
+          article.title,
+          article.publisher,
+          article.unixtime
         );
       }
     }
@@ -83,7 +84,7 @@ export default class Scenario {
     userData: UserData,
     message: string
   ): Promise<Scenario> {
-    const currentArticle = await this.getCurrentArticle(userData);
+    const currentArticle = await this.getArticle(userData);
     const nextSentence = currentArticle.currentSentence;
 
     const scenario = Scenario.setUp(
@@ -123,13 +124,13 @@ export default class Scenario {
     return result.isPoor || result.isRegrettable;
   }
 
-  private static async getCurrentArticle(userData: UserData): Promise<Article> {
+  private static async getArticle(userData: UserData): Promise<Article> {
     try {
       let article: Article;
       if (userData.isEmpty) {
-        article = await Article.getNext();
+        article = await Article.getLatest();
       } else {
-        article = await Article.getNextOrIncrementCurrentIndex(
+        article = await Article.getNextArticleOrIncrementIndex(
           userData.articleId,
           userData.currentSentence
         );
