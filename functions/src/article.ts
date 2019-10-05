@@ -20,6 +20,7 @@ export default class Article {
     readonly title: string,
     readonly body: string,
     readonly sentences: string[],
+    readonly maxWordCount: number,
     readonly creator: string,
     isoDate: string
   ) {
@@ -97,6 +98,7 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
+        data.maxWordCount,
         data.creator,
         data.unixtime
       );
@@ -131,6 +133,7 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
+        data.maxWordCount,
         data.creator,
         data.unixtime
       );

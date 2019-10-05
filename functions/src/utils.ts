@@ -42,6 +42,18 @@ export default class Utils {
     return array[Math.floor(Math.random() * array.length)];
   }
 
+  static maxWordCountInSentences(sentences: string[]): number {
+    let maxWordCount = 0;
+
+    sentences.forEach(sentence => {
+      const wordCount = this.countWord(sentence);
+      if (maxWordCount < wordCount) {
+        maxWordCount = wordCount;
+      }
+    });
+    return maxWordCount;
+  }
+
   static countWord(text: string): number {
     return text.split(/\b\s\b/).length;
   }
