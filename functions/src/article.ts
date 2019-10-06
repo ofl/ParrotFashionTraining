@@ -13,7 +13,6 @@ const NEWS_SOURCES: { [key: string]: string } = {
 };
 
 export default class Article {
-  readonly unixtime: number;
   currentIndex: number;
 
   constructor(
@@ -23,9 +22,8 @@ export default class Article {
     readonly sentences: string[],
     readonly maxWordCount: number,
     readonly creator: string,
-    isoDate: string
+    readonly unixtime: number
   ) {
-    this.unixtime = moment(isoDate).unix();
     this.currentIndex = 0;
   }
 
