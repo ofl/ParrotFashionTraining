@@ -12,7 +12,7 @@ const MAX_RETRY_COUNT = 3;
 export default class Scenario {
   private publisher: string = "";
   private title: string = "";
-  private epochMS: number = 0;
+  private unixtime: number = 0;
 
   constructor(
     public readingSpeed: number,
@@ -66,7 +66,7 @@ export default class Scenario {
         scenario.setTitleAndPublisher(
           article.title,
           article.publisher,
-          article.epochMS
+          article.unixtime
         );
       }
     }
@@ -95,7 +95,7 @@ export default class Scenario {
     scenario.setTitleAndPublisher(
       currentArticle.title,
       currentArticle.publisher,
-      currentArticle.epochMS
+      currentArticle.unixtime
     );
     return scenario;
   }
@@ -161,10 +161,10 @@ export default class Scenario {
     this.reply += value;
   }
 
-  setTitleAndPublisher(title: string, publisher: string, epochMS: number) {
+  setTitleAndPublisher(title: string, publisher: string, unixtime: number) {
     this.title = title;
     this.publisher = publisher;
-    this.epochMS = epochMS;
+    this.unixtime = unixtime;
   }
 
   get ssml(): string {
@@ -174,7 +174,7 @@ export default class Scenario {
     if (this.title !== "") {
       ssml += SSML.addBreak(1);
       ssml += `<s>Next title is "${this.title}" from ${this.publisher} `;
-      ssml += `${moment(this.epochMS).fromNow()}.</s>`;
+      ssml += `${moment.unix(this.unixtime).fromNow()}.</s>`;
       ssml += SSML.addBreak(0.5);
       ssml += `<s>Repeat after me.</s>`;
     }

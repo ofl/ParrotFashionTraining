@@ -13,7 +13,7 @@ const NEWS_SOURCES: { [key: string]: string } = {
 };
 
 export default class Article {
-  readonly epochMS: number;
+  readonly unixtime: number;
   currentIndex: number;
 
   constructor(
@@ -25,7 +25,7 @@ export default class Article {
     readonly creator: string,
     isoDate: string
   ) {
-    this.epochMS = moment(isoDate).unix();
+    this.unixtime = moment(isoDate).unix();
     this.currentIndex = 0;
   }
 
@@ -79,7 +79,7 @@ export default class Article {
       return currentArticle;
     }
 
-    const query = this.getBefore(currentArticle.epochMS);
+    const query = this.getBefore(currentArticle.unixtime);
 
     return await this.load(query);
   }
@@ -101,16 +101,16 @@ export default class Article {
         data.sentences,
         data.maxWordCount,
         data.creator,
-        data.epochMS
+        data.unixtime
       );
     }
   }
 
-  static getBefore(epochMS: number, opStr: WhereFilterOp = "<"): Query {
+  static getBefore(unixtime: number, opStr: WhereFilterOp = "<"): Query {
     return firestore
       .collection(ARTICLE_COLLECTION_PATH)
-      .where("epochMS", opStr, epochMS)
-      .orderBy("epochMS", "desc");
+      .where("unixtime", opStr, unixtime)
+      .orderBy("unixtime", "desc");
   }
 
   private static async load(query: Query): Promise<Article> {
@@ -136,7 +136,7 @@ export default class Article {
         data.sentences,
         data.maxWordCount,
         data.creator,
-        data.epochMS
+        data.unixtime
       );
     });
   }
@@ -148,7 +148,7 @@ export default class Article {
       body: this.body,
       sentences: this.sentences,
       creator: this.creator,
-      epochMS: this.epochMS
+      unixtime: this.unixtime
     };
   }
 
