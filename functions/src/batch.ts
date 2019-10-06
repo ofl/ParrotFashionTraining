@@ -9,21 +9,21 @@ export default class Batch {
       "http://feeds.nytimes.com/nyt/rss/Technology"
     );
 
-    const epochMS: number = moment()
+    const unixtime: number = moment()
       .add(-days, "day")
       .unix();
     const currentArticles = articles.filter(
-      article => article.epochMS > epochMS
+      article => article.unixtime > unixtime
     );
 
     return Article.batchCreate(currentArticles);
   }
 
   static async deleteOldArticles(days: number = 1): Promise<void> {
-    const epochMS: number = moment()
+    const unixtime: number = moment()
       .add(-days, "day")
       .unix();
-    const snapshot = await Article.getBefore(epochMS).get();
+    const snapshot = await Article.getBefore(unixtime).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");
