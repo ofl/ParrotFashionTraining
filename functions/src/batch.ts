@@ -64,7 +64,7 @@ export default class Batch {
           sentences,
           Utils.maxWordCountInSentences(sentences),
           content.creator,
-          content.isoDate
+          moment(content.isoDate).unix()
         )
       );
     });
