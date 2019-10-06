@@ -24,7 +24,6 @@ class ResultMessage {
   static readonly GOOD: string[] = ["OK!", "Good job!", "Well done!"];
   static readonly REGRETTABLE: string[] = ["So close!", "Almost had it!"];
   static readonly POOR: string[] = [
-    "All right!",
     "Don't mind!",
     "Let's do your best next time!"
   ];
@@ -66,7 +65,10 @@ export default class Message {
     return Utils.selectRandomly(ResultMessage.SKIPPED);
   }
 
-  static getResultMessage(result: AnswerResult): string {
+  static getResultMessage(
+    result: AnswerResult,
+    retrying: boolean = false
+  ): string {
     if (result.isExcellent) {
       return this.resultExcellent;
     } else if (result.isGood) {
@@ -74,6 +76,9 @@ export default class Message {
     } else if (result.isRegrettable) {
       return this.resultRegrettable;
     } else {
+      if (retrying) {
+        return "";
+      }
       return this.resultPoor;
     }
   }

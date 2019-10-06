@@ -1,8 +1,8 @@
 import Utils from "./Utils";
 
-const REGRETTABLE_LEVEL: number = 60;
-const GOOD_LEVEL: number = 75;
-const PERFECT_LEVEL: number = 90;
+const REGRETTABLE_LEVEL: number = 75;
+const GOOD_LEVEL: number = 85;
+const PERFECT_LEVEL: number = 95;
 
 export default class AnswerResult {
   constructor(private percentage: number) {}

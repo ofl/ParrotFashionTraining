@@ -52,13 +52,16 @@ export default class Scenario {
     }
 
     const answerResult = AnswerResult.get(currentSentence, answer);
-    scenario.addReply(Message.getResultMessage(answerResult));
 
     if (this.canRetry(userData.retryCount, answerResult)) {
+      scenario.addReply(Message.getResultMessage(answerResult, true));
+
       scenario.speakSlowly();
       userData.incrementRetryCount();
       userData.setReadingSpeed(scenario.readingSpeed);
     } else {
+      scenario.addReply(Message.getResultMessage(answerResult));
+
       const article = await this.getArticle(userData);
       const nextSentence = article.currentSentence;
       scenario.setSentence(nextSentence);
@@ -183,10 +186,7 @@ export default class Scenario {
 
     if (this.sentence !== "") {
       ssml += SSML.addBreak(1);
-      ssml += SSML.encloseSentence(
-        this.sentence,
-        READING_SPEED[this.readingSpeed]
-      );
+      ssml += SSML.encloseSentence(this.sentence, `${this.readingSpeed}%`);
     }
 
     return SSML.enclose(ssml);
