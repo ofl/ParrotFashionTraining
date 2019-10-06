@@ -79,7 +79,7 @@ export default class Batch {
     return Article.batchCreate(currentArticles);
   }
 
-  static async deleteOldArticles(days: number = 1): Promise<void> {
+  static async deleteOldArticles(days: number = 2): Promise<void> {
     const unixtime: number = moment()
       .add(-days, "day")
       .unix();

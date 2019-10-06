@@ -65,3 +65,11 @@ describe(".selectRandomly", () => {
     assert.isNumber(Utils.selectRandomly(array));
   });
 });
+
+describe(".maxWordCountInSentences", () => {
+  it("テキストの配列を渡すと最も大きい単語数が返ること", () => {
+    const array: string[] = ["foo bar baz", "bar foo bar baz", "baz bsr"];
+
+    assert.equal(Utils.maxWordCountInSentences(array), 4);
+  });
+});
