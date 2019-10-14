@@ -38,6 +38,14 @@ export default class Utils {
     return array[Math.floor(Math.random() * array.length)];
   }
 
+  static randomMessage(key: string, length: number): string {
+    return `${key}_${this.dice(length)}`;
+  }
+
+  static dice(length: number): number {
+    return Math.floor(Math.random() * length) + 1;
+  }
+
   static maxWordCountInSentences(sentences: string[]): number {
     let maxWordCount = 0;
 
