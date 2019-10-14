@@ -27,7 +27,7 @@ class ResultMessage {
     "Don't mind!",
     "Let's do your best next time!"
   ];
-  static readonly SKIPPED: string[] = ["All right. Let's start next sentence."];
+  static readonly SKIPPED: string[] = ["Let's start next sentence."];
 }
 
 export default class Message {
