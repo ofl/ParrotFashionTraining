@@ -10,23 +10,20 @@ const NEWS_SOURCES: { [key: string]: string } = {
   "cnn.com": "CNN",
   "reuters.com": "Reuters"
 };
-const EASINESS_WEIGHT: number = 10000000000;
 
 export default class Article {
   currentIndex: number;
-  easinessAndDate: number;
 
   constructor(
     readonly guid: string,
     readonly title: string,
     readonly body: string,
     readonly sentences: string[],
-    readonly maxWordCount: number,
+    readonly easinessAndDate: number,
     readonly creator: string,
     readonly unixtime: number
   ) {
     this.currentIndex = 0;
-    this.easinessAndDate = EASINESS_WEIGHT * maxWordCount - unixtime;
   }
 
   static async findEasiest(easinessAndDate: number = 0): Promise<Article> {
