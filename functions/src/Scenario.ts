@@ -131,9 +131,9 @@ export default class Scenario {
     try {
       let article: Article;
       if (userData.isEmpty) {
-        article = await Article.getLatest();
+        article = await Article.findEasiest();
       } else {
-        article = await Article.getNextArticleOrIncrementIndex(
+        article = await Article.getNextArticleOrIncrementIndexOfSentences(
           userData.articleId,
           userData.currentSentence
         );
