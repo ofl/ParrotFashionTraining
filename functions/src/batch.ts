@@ -83,7 +83,7 @@ export default class Batch {
     const unixtime: number = moment()
       .add(-days, "day")
       .unix();
-    const snapshot = await Article.getBefore(unixtime).get();
+    const snapshot = await Article.queryOfPublishedBefore(unixtime).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");

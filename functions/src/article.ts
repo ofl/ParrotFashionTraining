@@ -2,7 +2,6 @@ import * as firebase from "firebase-admin";
 import { WhereFilterOp, Query } from "@google-cloud/firestore";
 import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
 import Utils from "./Utils";
-import * as moment from "moment";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
@@ -11,9 +10,11 @@ const NEWS_SOURCES: { [key: string]: string } = {
   "cnn.com": "CNN",
   "reuters.com": "Reuters"
 };
+const EASINESS_WEIGHT: number = 10000000000;
 
 export default class Article {
   currentIndex: number;
+  easinessAndDate: number;
 
   constructor(
     readonly guid: string,
@@ -25,6 +26,42 @@ export default class Article {
     readonly unixtime: number
   ) {
     this.currentIndex = 0;
+    this.easinessAndDate = EASINESS_WEIGHT * maxWordCount - unixtime;
+  }
+
+  static async findEasiest(easinessAndDate: number = 0): Promise<Article> {
+    const query = firestore
+      .collection(ARTICLE_COLLECTION_PATH)
+      .where("easinessAndDate", ">", easinessAndDate)
+      .orderBy("easinessAndDate");
+
+    return await this.findOne(query);
+  }
+
+  static async getNextArticleOrIncrementIndexOfSentences(
+    articleId: string,
+    currentSentence: string
+  ): Promise<Article> {
+    const currentArticle = await this.get(Utils.md5hex(articleId));
+
+    const nextIndex = currentArticle.sentences.indexOf(currentSentence) + 1;
+    if (nextIndex > 0 && nextIndex < currentArticle.sentences.length) {
+      currentArticle.currentIndex = nextIndex;
+
+      return currentArticle;
+    }
+
+    return await this.findEasiest(currentArticle.easinessAndDate);
+  }
+
+  static queryOfPublishedBefore(
+    unixtime: number,
+    opStr: WhereFilterOp = "<"
+  ): Query {
+    return firestore
+      .collection(ARTICLE_COLLECTION_PATH)
+      .where("unixtime", opStr, unixtime)
+      .orderBy("unixtime", "desc");
   }
 
   static async batchCreate(articles: Article[]): Promise<void> {
@@ -58,31 +95,7 @@ export default class Article {
     await batch.commit();
   }
 
-  static async getLatest(): Promise<Article> {
-    const query = this.getBefore(moment().unix());
-
-    return await this.load(query);
-  }
-
-  static async getNextArticleOrIncrementIndex(
-    articleId: string,
-    currentSentence: string
-  ): Promise<Article> {
-    const currentArticle = await this.get(Utils.md5hex(articleId));
-
-    const nextIndex = currentArticle.sentences.indexOf(currentSentence) + 1;
-    if (nextIndex > 0 && nextIndex < currentArticle.sentences.length) {
-      currentArticle.currentIndex = nextIndex;
-
-      return currentArticle;
-    }
-
-    const query = this.getBefore(currentArticle.unixtime);
-
-    return await this.load(query);
-  }
-
-  static async get(articleId: string): Promise<Article> {
+  private static async get(articleId: string): Promise<Article> {
     const doc = await firestore
       .collection(ARTICLE_COLLECTION_PATH)
       .doc(articleId)
@@ -97,21 +110,14 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
-        data.maxWordCount,
+        data.easinessAndDate,
         data.creator,
         data.unixtime
       );
     }
   }
 
-  static getBefore(unixtime: number, opStr: WhereFilterOp = "<"): Query {
-    return firestore
-      .collection(ARTICLE_COLLECTION_PATH)
-      .where("unixtime", opStr, unixtime)
-      .orderBy("unixtime", "desc");
-  }
-
-  private static async load(query: Query): Promise<Article> {
+  private static async findOne(query: Query): Promise<Article> {
     const snapshot = await query.limit(1).get();
     const articles: Article[] = await this.loadList(snapshot);
 
@@ -132,7 +138,7 @@ export default class Article {
         data.title,
         data.body,
         data.sentences,
-        data.maxWordCount,
+        data.easinessAndDate,
         data.creator,
         data.unixtime
       );
@@ -146,7 +152,8 @@ export default class Article {
       body: this.body,
       sentences: this.sentences,
       creator: this.creator,
-      unixtime: this.unixtime
+      unixtime: this.unixtime,
+      easinessAndDate: this.easinessAndDate
     };
   }
 
