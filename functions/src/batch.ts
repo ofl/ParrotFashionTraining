@@ -46,6 +46,7 @@ const SOURCES: string[] = [
   "http://feeds.reuters.com/Reuters/domesticNews",
   "http://feeds.reuters.com/Reuters/worldNews"
 ];
+const EASINESS_WEIGHT: number = 10000000000;
 
 export default class Batch {
   static async createArticlesFromRSS(days: number = 1) {
@@ -56,13 +57,16 @@ export default class Batch {
     );
     contents.forEach(content => {
       const sentences: string[] = TextSplitter.run(content.contentSnippet);
+      const maxWordCount = Utils.maxWordCountInSentences(sentences);
+      const easinessAndDate = EASINESS_WEIGHT * maxWordCount - unixtime;
+
       articles.push(
         new Article(
           content.guid,
           content.title,
           content.contentSnippet,
           sentences,
-          Utils.maxWordCountInSentences(sentences),
+          easinessAndDate,
           content.creator,
           moment(content.isoDate).unix()
         )
