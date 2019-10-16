@@ -1,6 +1,7 @@
 import * as moment from "moment";
 import UserData from "./UserData";
-import { Article, ArticleStore } from "./Article";
+import Article from "./Article";
+import ArticleStore from "./ArticleStore";
 import Message from "./Message";
 import AnswerResult from "./AnswerResult";
 import SSML from "./SSML";
