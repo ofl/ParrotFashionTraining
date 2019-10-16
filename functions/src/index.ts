@@ -75,13 +75,5 @@ exports.scheduledBatchCreateArticles = functions.pubsub
     console.log("Batch.createArticlesFromRSS");
 
     await Batch.createArticlesFromRSS();
-  });
-
-exports.scheduledBatchDeleteArticles = functions.pubsub
-  .schedule("20 1 * * *")
-  .timeZone("Asia/Tokyo")
-  .onRun(async _context => {
-    console.log("Batch.deleteOldArticles");
-
     await Batch.deleteOldArticles();
   });

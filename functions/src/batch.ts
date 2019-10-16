@@ -1,7 +1,6 @@
 import Utils from "./Utils";
 import Crawler from "./Crawler";
-import TextSplitter from "./TextSplitter";
-import Article from "./Article";
+import ArticleStore from "./ArticleStore";
 import * as moment from "moment";
 
 const SOURCES: string[] = [
@@ -46,54 +45,27 @@ const SOURCES: string[] = [
   "http://feeds.reuters.com/Reuters/domesticNews",
   "http://feeds.reuters.com/Reuters/worldNews"
 ];
-const EASINESS_WEIGHT: number = 10000000000;
 
 export default class Batch {
-  static async createArticlesFromRSS(days: number = 1) {
-    const articles: Article[] = [];
-
+  static async createArticlesFromRSS() {
     const contents = await Crawler.getFeedContents(
       Utils.selectRandomly(SOURCES)
     );
-    contents.forEach(content => {
-      const sentences: string[] = TextSplitter.run(content.contentSnippet);
-      const maxWordCount = Utils.maxWordCountInSentences(sentences);
-      const easinessAndDate = EASINESS_WEIGHT * maxWordCount - unixtime;
 
-      articles.push(
-        new Article(
-          content.guid,
-          content.title,
-          content.contentSnippet,
-          sentences,
-          easinessAndDate,
-          content.creator,
-          moment(content.isoDate).unix()
-        )
-      );
-    });
-
-    const unixtime: number = moment()
-      .add(-days, "day")
-      .unix();
-    const currentArticles = articles.filter(
-      article => article.unixtime > unixtime
-    );
-
-    return Article.batchCreate(currentArticles);
+    return ArticleStore.batchCreate(contents);
   }
 
-  static async deleteOldArticles(days: number = 2): Promise<void> {
+  static async deleteOldArticles(days: number = 1): Promise<void> {
     const unixtime: number = moment()
       .add(-days, "day")
       .unix();
-    const snapshot = await Article.queryOfPublishedBefore(unixtime).get();
+    const snapshot = await ArticleStore.queryOfPublishedBefore(unixtime).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");
       return;
     }
 
-    return Article.batchDelete(snapshot);
+    return ArticleStore.batchDelete(snapshot);
   }
 }
