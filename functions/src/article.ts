@@ -11,7 +11,7 @@ const NEWS_SOURCES: { [key: string]: string } = {
   "reuters.com": "Reuters"
 };
 
-export default class Article {
+class Article {
   currentIndex: number;
 
   constructor(
@@ -26,6 +26,32 @@ export default class Article {
     this.currentIndex = 0;
   }
 
+  toObject(): Object {
+    return {
+      guid: this.guid,
+      title: this.title,
+      body: this.body,
+      sentences: this.sentences,
+      creator: this.creator,
+      unixtime: this.unixtime,
+      easinessAndDate: this.easinessAndDate
+    };
+  }
+
+  get currentSentence(): string {
+    return this.sentences[this.currentIndex];
+  }
+
+  get publisher(): string {
+    return this.newsSource || this.creator;
+  }
+
+  get newsSource(): string | null {
+    return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
+  }
+}
+
+class ArticleStore {
   static async findEasiest(easinessAndDate: number = 0): Promise<Article> {
     const query = firestore
       .collection(ARTICLE_COLLECTION_PATH)
@@ -102,7 +128,7 @@ export default class Article {
     if (!data) {
       throw new ArticleNotFound("Article not found");
     } else {
-      return new this(
+      return new Article(
         data.guid,
         data.title,
         data.body,
@@ -130,7 +156,7 @@ export default class Article {
   ): Promise<Article[]> {
     return snapshot.docs.map(doc => {
       const data = doc.data();
-      return new this(
+      return new Article(
         data.guid,
         data.title,
         data.body,
@@ -141,28 +167,6 @@ export default class Article {
       );
     });
   }
-
-  toObject(): Object {
-    return {
-      guid: this.guid,
-      title: this.title,
-      body: this.body,
-      sentences: this.sentences,
-      creator: this.creator,
-      unixtime: this.unixtime,
-      easinessAndDate: this.easinessAndDate
-    };
-  }
-
-  get currentSentence(): string {
-    return this.sentences[this.currentIndex];
-  }
-
-  get publisher(): string {
-    return this.newsSource || this.creator;
-  }
-
-  get newsSource(): string | null {
-    return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
-  }
 }
+
+export { Article, ArticleStore };

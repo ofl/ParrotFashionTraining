@@ -1,5 +1,5 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
-import Article from "./Article";
+import { Article } from "./Article";
 import Scenario from "./Scenario";
 
 // Singleton class

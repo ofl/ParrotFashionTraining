@@ -1,7 +1,7 @@
 import Utils from "./Utils";
 import Crawler from "./Crawler";
 import TextSplitter from "./TextSplitter";
-import Article from "./Article";
+import { Article, ArticleStore } from "./Article";
 import * as moment from "moment";
 
 const SOURCES: string[] = [
@@ -80,20 +80,20 @@ export default class Batch {
       article => article.unixtime > unixtime
     );
 
-    return Article.batchCreate(currentArticles);
+    return ArticleStore.batchCreate(currentArticles);
   }
 
   static async deleteOldArticles(days: number = 2): Promise<void> {
     const unixtime: number = moment()
       .add(-days, "day")
       .unix();
-    const snapshot = await Article.queryOfPublishedBefore(unixtime).get();
+    const snapshot = await ArticleStore.queryOfPublishedBefore(unixtime).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");
       return;
     }
 
-    return Article.batchDelete(snapshot);
+    return ArticleStore.batchDelete(snapshot);
   }
 }

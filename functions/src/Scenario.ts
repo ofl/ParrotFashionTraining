@@ -1,6 +1,6 @@
 import * as moment from "moment";
 import UserData from "./UserData";
-import Article from "./Article";
+import { Article, ArticleStore } from "./Article";
 import Message from "./Message";
 import AnswerResult from "./AnswerResult";
 import SSML from "./SSML";
@@ -131,9 +131,9 @@ export default class Scenario {
     try {
       let article: Article;
       if (userData.isEmpty) {
-        article = await Article.findEasiest();
+        article = await ArticleStore.findEasiest();
       } else {
-        article = await Article.getNextArticleOrIncrementIndexOfSentences(
+        article = await ArticleStore.getNextArticleOrIncrementIndexOfSentences(
           userData.articleId,
           userData.currentSentence
         );
