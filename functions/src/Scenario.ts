@@ -23,20 +23,21 @@ export default class Scenario {
   }
 
   async welcome(): Promise<void> {
-    console.log("welcome");
     this.reset();
 
-    await this.readNewArticle("WELCOME");
+    this.speeches.push(new Reply("WELCOME"));
+    this.speeches.push(new Reply(Utils.randomMessage("YELL", 3)));
+    await this.readNewArticle();
   }
 
   async userAnswered(answer: string): Promise<void> {
-    console.log("user answered");
+    const questionText = this.currentSentence;
 
-    if (this.currentSentence === "") {
+    if (questionText === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    const answerResult = AnswerResult.get(this.currentSentence, answer);
+    const answerResult = AnswerResult.get(questionText, answer);
 
     if (this.mustRetry(this.retryCount, answerResult)) {
       this.incrementRetryCount();
@@ -44,77 +45,55 @@ export default class Scenario {
 
       this.speeches.push(new Reply(this.getResultMessage(answerResult, true)));
       this.speeches.push(new Break(1.0));
-      this.speeches.push(new RawText(this.currentSentence, this.readingSpeed));
+      this.speeches.push(new RawText(questionText, this.readingSpeed));
     } else {
       const article = await this.findArticleForNextSentence();
-      const nextSentence = article.currentSentence;
-      const questionText = new RawText(nextSentence);
-
       this.setNewPractice(article);
 
       this.speeches.push(new Reply(this.getResultMessage(answerResult)));
       if (article.currentIndex === 0) {
-        this.speeches.push(new Break(0.5));
-        this.speeches.push(new Reply("NEXT_TITLE"));
-        this.speeches.push(new RawText(article.title));
-        this.speeches.push(new Credit(article.publisher, article.unixtime));
+        this.addArticleIntroduction(article);
       }
-      this.speeches.push(new Break(1.0));
-      this.speeches.push(questionText);
+      this.startPractice(article.currentSentence);
     }
   }
 
   async skipArticle(): Promise<void> {
-    console.log("skipped article");
-
-    await this.readNewArticle("SKIP_ARTICLE");
+    this.speeches.push(new Reply("SKIP_ARTICLE"));
+    await this.readNewArticle();
   }
 
   async skipSentence(): Promise<void> {
-    console.log("skipped sentence");
-
-    await this.readNewSentence("SKIP_SENTENCE");
+    this.speeches.push(new Reply("SKIP_SENTENCE"));
+    await this.readNewSentence();
   }
 
-  async readNewSentence(message: string): Promise<void> {
+  private async readNewSentence(): Promise<void> {
     const article = await this.findArticleForNextSentence();
     this.setNewPractice(article);
-    const currentSentence = article.currentSentence;
 
-    if (currentSentence === "") {
+    const questionText = article.currentSentence;
+    if (questionText === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    this.speeches.push(new Reply(message));
-    this.speeches.push(new Break(0.5));
-    this.speeches.push(new Reply("REPEAT_AFTER_ME"));
-    this.speeches.push(new Break(1.0));
-    this.speeches.push(new RawText(currentSentence));
+    this.startPractice(questionText);
   }
 
-  private async readNewArticle(message: string): Promise<void> {
+  private async readNewArticle(): Promise<void> {
     const article = await this.findArticleForNextSentence();
     this.setNewPractice(article);
-    const currentSentence = article.currentSentence;
 
-    if (currentSentence === "") {
+    const questionText = article.currentSentence;
+    if (questionText === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    this.speeches.push(new Reply(message));
-    this.speeches.push(new Break(1.0));
-    this.speeches.push(new Reply("NEXT_TITLE"));
-    this.speeches.push(new RawText(article.title));
-    this.speeches.push(new Credit(article.publisher, article.unixtime));
-    this.speeches.push(new Break());
-    this.speeches.push(new Reply("REPEAT_AFTER_ME"));
-    this.speeches.push(new Break(1.0));
-    this.speeches.push(new RawText(currentSentence));
+    this.addArticleIntroduction(article);
+    this.startPractice(questionText);
   }
 
   async sayAgain(): Promise<void> {
-    console.log("once again");
-
     const currentSentence = this.currentSentence;
     if (currentSentence === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
@@ -130,8 +109,6 @@ export default class Scenario {
   }
 
   async sayGoodBye(): Promise<void> {
-    console.log("goodbye");
-
     this.speeches.push(
       new Reply(Utils.randomMessage("BYE", 3), SpeechType.Close)
     );
@@ -205,5 +182,19 @@ export default class Scenario {
     this.retryCount = 0;
     this.currentSentence = "";
     this.readingSpeed = Scenario.defaultReadingSpeed;
+  }
+
+  private addArticleIntroduction(article: Article) {
+    this.speeches.push(new Break());
+    this.speeches.push(new Reply("INTRODUCTION"));
+    this.speeches.push(new RawText(article.title));
+    this.speeches.push(new Credit(article.publisher, article.unixtime));
+  }
+
+  private startPractice(questionText: string) {
+    this.speeches.push(new Break());
+    this.speeches.push(new Reply("REPEAT_AFTER_ME"));
+    this.speeches.push(new Break(1.0));
+    this.speeches.push(new RawText(questionText));
   }
 }

@@ -24,7 +24,7 @@ const Dictionary: { [key: string]: string } = {
   POOR_2: "Let's do your best next time!",
   SKIP_SENTENCE: "Let's start next sentence.",
   SKIP_ARTICLE: "Let's start next article.",
-  NEXT_TITLE: "Next title of article is",
+  INTRODUCTION: "The title of the next article is",
   REPEAT_AFTER_ME: "Repeat after me.",
   FROM: "from {{source}} {{fromNow}}",
   NOT_FOUND: "Current sentence not found",

@@ -112,7 +112,7 @@ export default class ArticleStore {
     if (articles.length > 0) {
       return articles[0];
     } else {
-      throw new AvailableArticleNotExist("Article not exists");
+      throw new AvailableArticleNotExist("NOT_EXIST");
     }
   }
 
