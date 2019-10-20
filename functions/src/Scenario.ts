@@ -1,195 +1,200 @@
-import * as moment from "moment";
-import UserData from "./UserData";
 import Article from "./Article";
 import ArticleStore from "./ArticleStore";
-import Message from "./Message";
 import AnswerResult from "./AnswerResult";
-import SSML from "./SSML";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
+import { Speech, Reply, Credit, RawText, SpeechType, Break } from "./Speech";
+import Utils from "./Utils";
 
 const DEFAULT_READING_SPEED: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
 
 export default class Scenario {
-  private publisher: string = "";
-  private title: string = "";
-  private unixtime: number = 0;
+  speeches: Speech[] = [];
 
   constructor(
-    public readingSpeed: number,
-    private sentence: string,
-    private reply: string
+    public articleId: string = "",
+    public currentSentence: string = "",
+    public retryCount: number = 0,
+    public readingSpeed: number = Scenario.defaultReadingSpeed
   ) {}
-
-  static setUp(
-    readingSpeed: number = this.defaultReadingSpeed,
-    sentence: string = "",
-    reply: string = ""
-  ): Scenario {
-    return new this(readingSpeed, sentence, reply);
-  }
 
   static get defaultReadingSpeed(): number {
     return DEFAULT_READING_SPEED;
   }
 
-  static async welcome(userData: UserData): Promise<Scenario> {
-    console.log("welcome");
-    userData.reset();
+  async welcome(): Promise<void> {
+    this.reset();
 
-    return await this.readNewArticle(userData, Message.welcome);
+    this.speeches.push(new Reply("WELCOME"));
+    this.speeches.push(new Reply(Utils.randomMessage("YELL", 3)));
+    await this.readNewArticle();
   }
 
-  static async userAnswered(userData: UserData, answer: string) {
-    console.log("user answered");
+  async userAnswered(answer: string): Promise<void> {
+    const questionText = this.currentSentence;
 
-    const currentSentence = userData.currentSentence;
-    const scenario = Scenario.setUp(userData.readingSpeed, currentSentence);
-
-    if (currentSentence === "") {
-      userData.reset();
-
-      throw new CurrentSentenceNotFound("Current sentence not found");
+    if (questionText === "") {
+      throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    const answerResult = AnswerResult.get(currentSentence, answer);
+    const answerResult = AnswerResult.get(questionText, answer);
 
-    if (this.canRetry(userData.retryCount, answerResult)) {
-      scenario.addReply(Message.getResultMessage(answerResult, true));
+    if (this.mustRetry(this.retryCount, answerResult)) {
+      this.incrementRetryCount();
+      this.speakSlowly();
 
-      scenario.speakSlowly();
-      userData.incrementRetryCount();
-      userData.setReadingSpeed(scenario.readingSpeed);
+      this.speeches.push(new Reply(this.getResultMessage(answerResult, true)));
+      this.speeches.push(new Break(1.0));
+      this.speeches.push(new RawText(questionText, this.readingSpeed));
     } else {
-      scenario.addReply(Message.getResultMessage(answerResult));
+      const article = await this.findArticleForNextSentence();
+      this.setNewPractice(article);
 
-      const article = await this.getArticle(userData);
-      const nextSentence = article.currentSentence;
-      scenario.setSentence(nextSentence);
+      this.speeches.push(new Reply(this.getResultMessage(answerResult)));
       if (article.currentIndex === 0) {
-        scenario.setTitleAndPublisher(
-          article.title,
-          article.publisher,
-          article.unixtime
-        );
+        this.addArticleIntroduction(article);
       }
+      this.startPractice(article.currentSentence);
+    }
+  }
+
+  async skipArticle(): Promise<void> {
+    this.speeches.push(new Reply("SKIP_ARTICLE"));
+    await this.readNewArticle();
+  }
+
+  async skipSentence(): Promise<void> {
+    this.speeches.push(new Reply("SKIP_SENTENCE"));
+    await this.readNewSentence();
+  }
+
+  private async readNewSentence(): Promise<void> {
+    const article = await this.findArticleForNextSentence();
+    this.setNewPractice(article);
+
+    const questionText = article.currentSentence;
+    if (questionText === "") {
+      throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    return scenario;
+    this.startPractice(questionText);
   }
 
-  static async skipArticle(userData: UserData): Promise<Scenario> {
-    console.log("skipped");
+  private async readNewArticle(): Promise<void> {
+    const article = await this.findArticleForNextSentence();
+    this.setNewPractice(article);
 
-    return await this.readNewArticle(userData, Message.resultSkipped);
+    const questionText = article.currentSentence;
+    if (questionText === "") {
+      throw new CurrentSentenceNotFound("NOT_FOUND");
+    }
+
+    this.addArticleIntroduction(article);
+    this.startPractice(questionText);
   }
 
-  static async readNewArticle(
-    userData: UserData,
-    message: string
-  ): Promise<Scenario> {
-    const currentArticle = await this.getArticle(userData);
-    const nextSentence = currentArticle.currentSentence;
-
-    const scenario = Scenario.setUp(
-      userData.readingSpeed,
-      nextSentence,
-      message
-    );
-    scenario.setTitleAndPublisher(
-      currentArticle.title,
-      currentArticle.publisher,
-      currentArticle.unixtime
-    );
-    return scenario;
-  }
-
-  static async sayAgain(userData: UserData): Promise<Scenario> {
-    console.log("once again");
-
-    const currentSentence = userData.currentSentence;
-    const scenario = Scenario.setUp(userData.readingSpeed, currentSentence);
-
+  async sayAgain(): Promise<void> {
+    const currentSentence = this.currentSentence;
     if (currentSentence === "") {
-      userData.reset();
-
-      throw new CurrentSentenceNotFound("Current sentence not found");
+      throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    scenario.speakSlowly();
-    scenario.addReply(Message.okay);
-    return scenario;
+    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
+
+    this.speakSlowly();
+    const questionText = new RawText(currentSentence, this.readingSpeed);
+
+    this.speeches.push(new Break(1.0));
+    this.speeches.push(questionText);
   }
 
-  private static canRetry(retryCount: number, result: AnswerResult): boolean {
+  async sayGoodBye(): Promise<void> {
+    this.speeches.push(
+      new Reply(Utils.randomMessage("BYE", 3), SpeechType.Close)
+    );
+  }
+
+  private mustRetry(retryCount: number, result: AnswerResult): boolean {
     if (retryCount >= MAX_RETRY_COUNT) {
       return false;
     }
     return result.isPoor || result.isRegrettable;
   }
 
-  private static async getArticle(userData: UserData): Promise<Article> {
+  private async findArticleForNextSentence(): Promise<Article> {
     try {
       let article: Article;
-      if (userData.isEmpty) {
+
+      if (this.articleId === "") {
         article = await ArticleStore.findEasiest();
       } else {
         article = await ArticleStore.getNextArticleOrIncrementIndexOfSentences(
-          userData.articleId,
-          userData.currentSentence
+          this.articleId,
+          this.currentSentence
         );
       }
-      userData.setCurrentPractice(article);
 
       return article;
     } catch (error) {
       if (error instanceof ArticleNotFound) {
-        userData.reset();
+        this.reset();
       }
 
       throw error;
     }
   }
 
-  speakSlowly() {
+  private getResultMessage(
+    result: AnswerResult,
+    retrying: boolean = false
+  ): string {
+    if (result.isExcellent) {
+      return Utils.randomMessage("EXCELLENT", 2);
+    } else if (result.isGood) {
+      return Utils.randomMessage("GOOD", 3);
+    } else if (result.isRegrettable) {
+      return Utils.randomMessage("REGRETTABLE", 2);
+    } else if (!retrying) {
+      return Utils.randomMessage("POOR", 2);
+    }
+    return "";
+  }
+
+  private speakSlowly() {
     if (this.readingSpeed > 70) {
       this.readingSpeed -= 15;
     }
   }
 
-  setSentence(value: string) {
-    this.sentence = value;
+  private incrementRetryCount() {
+    this.retryCount++;
   }
 
-  addReply(value: string) {
-    this.reply += value;
+  private setNewPractice(article: Article) {
+    this.articleId = article.guid;
+    this.retryCount = 0;
+    this.currentSentence = article.currentSentence;
+    this.readingSpeed = Scenario.defaultReadingSpeed;
   }
 
-  setTitleAndPublisher(title: string, publisher: string, unixtime: number) {
-    this.title = title;
-    this.publisher = publisher;
-    this.unixtime = unixtime;
+  private reset() {
+    this.articleId = "";
+    this.retryCount = 0;
+    this.currentSentence = "";
+    this.readingSpeed = Scenario.defaultReadingSpeed;
   }
 
-  get ssml(): string {
-    let ssml = `<p>`;
-    ssml += `<s>${this.reply}</s>`;
+  private addArticleIntroduction(article: Article) {
+    this.speeches.push(new Break());
+    this.speeches.push(new Reply("INTRODUCTION"));
+    this.speeches.push(new RawText(article.title));
+    this.speeches.push(new Credit(article.publisher, article.unixtime));
+  }
 
-    if (this.title !== "") {
-      ssml += SSML.addBreak(1);
-      ssml += `<s>Next title is "${this.title}" from ${this.publisher} `;
-      ssml += `${moment.unix(this.unixtime).fromNow()}.</s>`;
-      ssml += SSML.addBreak(0.5);
-      ssml += `<s>Repeat after me.</s>`;
-    }
-
-    ssml += `</p>`;
-
-    if (this.sentence !== "") {
-      ssml += SSML.addBreak(1);
-      ssml += SSML.encloseSentence(this.sentence, `${this.readingSpeed}%`);
-    }
-
-    return SSML.enclose(ssml);
+  private startPractice(questionText: string) {
+    this.speeches.push(new Break());
+    this.speeches.push(new Reply("REPEAT_AFTER_ME"));
+    this.speeches.push(new Break(1.0));
+    this.speeches.push(new RawText(questionText));
   }
 }

@@ -3,7 +3,8 @@ import Utils from "./Utils";
 const NEWS_SOURCES: { [key: string]: string } = {
   "nytimes.com": "New York Times",
   "cnn.com": "CNN",
-  "reuters.com": "Reuters"
+  "reuters.com": "Reuters",
+  "bbc.co.uk": "BBC"
 };
 
 export default class Article {
