@@ -205,14 +205,14 @@ export default class TextSplitter {
     text: string,
     maxWordCount: number = MAX_WORDS_COUNT
   ): boolean {
-    return this.wordCountFewerThan(text, maxWordCount);
+    return this.wordCountLessThan(text, maxWordCount);
   }
 
   private static isTooShort(
     text: string,
     minWordCount: number = MIN_WORD_COUNT
   ): boolean {
-    return this.wordCountFewerThan(text, minWordCount);
+    return this.wordCountLessThan(text, minWordCount);
   }
 
   private static isLastIndex(arr: string[], index: number): boolean {
@@ -284,7 +284,7 @@ export default class TextSplitter {
     return `(?=\\b)${punctuation}\\s(?=\\b)`;
   }
 
-  private static wordCountFewerThan(text: string, count: number): boolean {
+  private static wordCountLessThan(text: string, count: number): boolean {
     return Utils.countWord(text) <= count;
   }
 }
