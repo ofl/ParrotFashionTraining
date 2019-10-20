@@ -9,15 +9,16 @@ import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
-const EASINESS_WEIGHT: number = 10000000000;
 const MAX_SENTENCE_LENGTH: number = 10;
 
 export default class ArticleStore {
-  static async findEasiest(easinessAndDate: number = 0): Promise<Article> {
+  static async findLatest(
+    unixtime: number = moment().unix()
+  ): Promise<Article> {
     const query = firestore
       .collection(ARTICLE_COLLECTION_PATH)
-      .where("easinessAndDate", ">", easinessAndDate)
-      .orderBy("easinessAndDate");
+      .where("unixtime", "<", unixtime)
+      .orderBy("unixtime", "desc");
 
     return await this.findOne(query);
   }
@@ -35,7 +36,7 @@ export default class ArticleStore {
       return currentArticle;
     }
 
-    return await this.findEasiest(currentArticle.easinessAndDate);
+    return await this.findLatest(currentArticle.unixtime);
   }
 
   static queryOfPublishedBefore(
@@ -54,7 +55,10 @@ export default class ArticleStore {
   ): Promise<void> {
     const batch = firestore.batch();
 
-    const currentArticles = this.filterOldAndLongArticles(contents, days);
+    const currentArticles = this.filterOldOrLongSentenceArticles(
+      contents,
+      days
+    );
     console.log(`creating ${currentArticles.length} articles`);
 
     currentArticles.forEach(article => {
@@ -98,7 +102,6 @@ export default class ArticleStore {
         data.title,
         data.body,
         data.sentences,
-        data.easinessAndDate,
         data.creator,
         data.unixtime
       );
@@ -126,14 +129,13 @@ export default class ArticleStore {
         data.title,
         data.body,
         data.sentences,
-        data.easinessAndDate,
         data.creator,
         data.unixtime
       );
     });
   }
 
-  private static filterOldAndLongArticles(
+  private static filterOldOrLongSentenceArticles(
     contents: { [key: string]: string }[],
     days: number
   ): Article[] {
@@ -141,11 +143,7 @@ export default class ArticleStore {
 
     contents.forEach(content => {
       const sentences: string[] = TextSplitter.run(content.contentSnippet);
-      const maxWordCount = Utils.maxWordCountInSentences(sentences);
       const publishedAtUnixTime = moment(content.isoDate).unix();
-
-      const easinessAndDate =
-        EASINESS_WEIGHT * maxWordCount - publishedAtUnixTime;
 
       if (sentences.length > MAX_SENTENCE_LENGTH) {
         return;
@@ -157,7 +155,6 @@ export default class ArticleStore {
           content.title,
           content.contentSnippet,
           sentences,
-          easinessAndDate,
           content.creator,
           publishedAtUnixTime
         )
