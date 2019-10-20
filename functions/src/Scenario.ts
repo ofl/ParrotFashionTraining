@@ -126,7 +126,7 @@ export default class Scenario {
       let article: Article;
 
       if (this.articleId === "") {
-        article = await ArticleStore.findEasiest();
+        article = await ArticleStore.findLatest();
       } else {
         article = await ArticleStore.getNextArticleOrIncrementIndexOfSentences(
           this.articleId,

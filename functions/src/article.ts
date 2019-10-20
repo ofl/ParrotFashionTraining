@@ -15,7 +15,6 @@ export default class Article {
     readonly title: string,
     readonly body: string,
     readonly sentences: string[],
-    readonly easinessAndDate: number,
     readonly creator: string,
     readonly unixtime: number
   ) {
@@ -29,8 +28,7 @@ export default class Article {
       body: this.body,
       sentences: this.sentences,
       creator: this.creator,
-      unixtime: this.unixtime,
-      easinessAndDate: this.easinessAndDate
+      unixtime: this.unixtime
     };
   }
 
