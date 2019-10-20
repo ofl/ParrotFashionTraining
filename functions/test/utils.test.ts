@@ -17,13 +17,13 @@ describe(".textSimilarity", () => {
   it("比較されたテキストの類似度が返ること2", () => {
     const targetSentence = "A New TV Show from CNN on FX and Hulu";
 
-    assert.equal(Utils.textSimilarity(originalSentence, targetSentence), 78);
+    assert.equal(Utils.textSimilarity(originalSentence, targetSentence), 79);
   });
 
   it("比較されたテキストの類似度が返ること3", () => {
     const targetSentence = "A New TV Show from CNN on FX";
 
-    assert.equal(Utils.textSimilarity(originalSentence, targetSentence), 61);
+    assert.equal(Utils.textSimilarity(originalSentence, targetSentence), 62);
   });
 });
 
