@@ -9,7 +9,7 @@ import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
-const MAX_SENTENCE_LENGTH: number = 10;
+const MAX_WORDS_COUNT = 9;
 
 export default class ArticleStore {
   static async findLatest(
@@ -143,9 +143,9 @@ export default class ArticleStore {
 
     contents.forEach(content => {
       const sentences: string[] = TextSplitter.run(content.contentSnippet);
-      const publishedAtUnixTime = moment(content.isoDate).unix();
+      const unixTimeOfPublishedAt = moment(content.isoDate).unix();
 
-      if (sentences.length > MAX_SENTENCE_LENGTH) {
+      if (Utils.maxWordCountInSentences(sentences) > MAX_WORDS_COUNT) {
         return;
       }
 
@@ -156,7 +156,7 @@ export default class ArticleStore {
           content.contentSnippet,
           sentences,
           content.creator,
-          publishedAtUnixTime
+          unixTimeOfPublishedAt
         )
       );
     });

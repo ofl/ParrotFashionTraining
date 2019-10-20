@@ -73,3 +73,12 @@ describe(".maxWordCountInSentences", () => {
     assert.equal(Utils.maxWordCountInSentences(array), 4);
   });
 });
+
+describe(".countWord", () => {
+  it("テキストの配列を渡すと最も大きい単語数が返ること", () => {
+    const sentence: string =
+      "No 10 source says an accompanying letter makes clear Boris Johnson believes an extension would be a mistake.";
+
+    assert.equal(Utils.countWord(sentence), 18);
+  });
+});
