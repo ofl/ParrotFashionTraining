@@ -28,73 +28,80 @@ const Dictionary: { [key: string]: string } = {
   REPEAT_AFTER_ME: "Repeat after me.",
   FROM: "from {{source}} {{fromNow}}",
   NOT_FOUND: "Current sentence not found",
-  NOT_EXIST: "Articles for practice not found"
+  NOT_EXIST: "Articles for practice not found",
+  CONTINUE_PRACTICE: "Do you want to continue?"
 };
 
-enum SpeechType {
-  Continue,
-  Ask,
-  Close
-}
-
-type Speech = Reply | Credit | RawText | Break;
-
-interface SSMLConvertAble {
+interface Speech {
   toSsml(): string;
-  speechType: SpeechType;
+  toText(): string;
 }
 
-class Reply implements SSMLConvertAble {
-  constructor(
-    public keyword: string = "",
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Reply implements Speech {
+  constructor(public keyword: string = "") {}
 
   toSsml(): string {
     if (this.keyword === "") {
       return "";
     }
-
     return SSML.encloseMessage(Dictionary[this.keyword]);
   }
+
+  toText(): string {
+    if (this.keyword === "") {
+      return "";
+    }
+    return Dictionary[this.keyword];
+  }
 }
 
-class Credit implements SSMLConvertAble {
-  constructor(
-    public publisher: string,
-    public unixtime: number,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Credit implements Speech {
+  constructor(public publisher: string, public unixtime: number) {}
 
   toSsml(): string {
+    return SSML.encloseMessage(this.toText());
+  }
+
+  toText(): string {
     const fromNow = moment.unix(this.unixtime).fromNow();
-    const credit = `from ${this.publisher} ${fromNow}`;
-
-    return SSML.encloseMessage(credit);
+    return `from ${this.publisher} ${fromNow}`;
   }
 }
 
-class RawText implements SSMLConvertAble {
-  constructor(
-    public text: string = "",
-    public readingSpeed: number = 100,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Quote implements Speech {
+  constructor(public text: string = "", public readingSpeed: number = 100) {}
 
   toSsml(): string {
-    return SSML.encloseRawText(` "${this.text}"`, `${this.readingSpeed}%`);
+    return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeed}%`);
+  }
+
+  toText(): string {
+    return `"${this.text}"`;
   }
 }
 
-class Break implements SSMLConvertAble {
-  constructor(
-    public time: number = 0.5,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class RawText implements Speech {
+  constructor(public text: string = "") {}
+
+  toSsml(): string {
+    return this.text;
+  }
+
+  toText(): string {
+    return this.text;
+  }
+}
+
+class Break implements Speech {
+  constructor(public time: number = 0.5) {}
 
   toSsml(): string {
     return SSML.addBreak(this.time);
   }
+
+  toText(): string {
+    return " ";
+  }
 }
 
-export { Speech, Reply, Credit, RawText, Break, SpeechType };
+export { Speech, Reply, Credit, Quote, RawText, Break };

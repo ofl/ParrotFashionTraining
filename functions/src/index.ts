@@ -5,16 +5,21 @@ firebase.initializeApp();
 import {
   dialogflow,
   DialogflowConversation,
-  Contexts
+  Contexts,
+  Confirmation
 } from "actions-on-google";
 
 import UserStatusStore from "./UserStatusStore";
 import Batch from "./Batch";
-import Scenario from "./Scenario";
-import { Speech, SpeechType, Reply } from "./Speech";
-import SSML from "./SSML";
+import { Scenario, EndStatus } from "./Scenario";
+import { Reply } from "./Speech";
 
 const app = dialogflow();
+
+const AppContexts = {
+  WAITING_ANSWER: "waiting_answer",
+  CONTINUE_PRACTICE: "continue_practice"
+};
 
 app.intent("Default Welcome Intent", async conv => {
   await actScenario(
@@ -33,14 +38,20 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
       await scenario.skipArticle();
       UserStatusStore.saveScenario(conv, scenario);
 
-      speak(conv, scenario.speeches);
+      conv.close(scenario.toSsml());
       return;
     }
 
     await scenario.userAnswered(answer);
     UserStatusStore.saveScenario(conv, scenario);
 
-    speak(conv, scenario.speeches);
+    if (scenario.endStatus === EndStatus.Confirm) {
+      conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
+      conv.ask(new Confirmation(scenario.toText()));
+      return;
+    }
+
+    conv.ask(scenario.toSsml());
   } catch (error) {
     console.error(error);
 
@@ -85,6 +96,33 @@ app.intent("Default Goodbye Intent", async conv => {
   );
 });
 
+app.intent("Continue Confirmation Handler", async (conv, _, confirmation) => {
+  if (confirmation) {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.skipArticle();
+      }
+    );
+  } else {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.sayGoodBye();
+      }
+    );
+  }
+});
+
+app.intent("Stop Practice Intent", async conv => {
+  await actScenario(
+    conv,
+    (scenario: Scenario): Promise<void> => {
+      return scenario.sayGoodBye();
+    }
+  );
+});
+
 const actScenario = async (
   conv: DialogflowConversation<unknown, unknown, Contexts>,
   callback: (scenario: Scenario) => Promise<void>
@@ -96,31 +134,16 @@ const actScenario = async (
 
     UserStatusStore.saveScenario(conv, scenario);
 
-    speak(conv, scenario.speeches);
+    if (scenario.endStatus === EndStatus.Continue) {
+      conv.ask(scenario.toSsml());
+    } else {
+      conv.close(scenario.toSsml());
+    }
   } catch (error) {
     console.error(error);
 
     UserStatusStore.resetScenario(conv);
     conv.close(new Reply(error.message).toSsml());
-  }
-};
-
-const speak = (
-  conv: DialogflowConversation<unknown, unknown, Contexts>,
-  speeches: Speech[]
-) => {
-  let ssml = "";
-  let lastSpeechType: SpeechType = SpeechType.Ask;
-
-  speeches.forEach(speech => {
-    ssml += speech.toSsml();
-    lastSpeechType = speech.speechType;
-  });
-
-  if (lastSpeechType === SpeechType.Ask) {
-    conv.ask(SSML.enclose(ssml));
-  } else {
-    conv.close(SSML.enclose(ssml));
   }
 };
 
