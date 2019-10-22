@@ -28,27 +28,16 @@ const Dictionary: { [key: string]: string } = {
   REPEAT_AFTER_ME: "Repeat after me.",
   FROM: "from {{source}} {{fromNow}}",
   NOT_FOUND: "Current sentence not found",
-  NOT_EXIST: "Articles for practice not found"
+  NOT_EXIST: "Articles for practice not found",
+  CONTINUE_PRACTICE: "Do you want to continue?"
 };
 
-enum SpeechType {
-  Continue,
-  Ask,
-  Close
-}
-
-type Speech = Reply | Credit | RawText | Break;
-
-interface SSMLConvertAble {
+interface Speech {
   toSsml(): string;
-  speechType: SpeechType;
 }
 
-class Reply implements SSMLConvertAble {
-  constructor(
-    public keyword: string = "",
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Reply implements Speech {
+  constructor(public keyword: string = "") {}
 
   toSsml(): string {
     if (this.keyword === "") {
@@ -59,12 +48,8 @@ class Reply implements SSMLConvertAble {
   }
 }
 
-class Credit implements SSMLConvertAble {
-  constructor(
-    public publisher: string,
-    public unixtime: number,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Credit implements Speech {
+  constructor(public publisher: string, public unixtime: number) {}
 
   toSsml(): string {
     const fromNow = moment.unix(this.unixtime).fromNow();
@@ -74,27 +59,20 @@ class Credit implements SSMLConvertAble {
   }
 }
 
-class RawText implements SSMLConvertAble {
-  constructor(
-    public text: string = "",
-    public readingSpeed: number = 100,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class RawText implements Speech {
+  constructor(public text: string = "", public readingSpeed: number = 100) {}
 
   toSsml(): string {
     return SSML.encloseRawText(` "${this.text}"`, `${this.readingSpeed}%`);
   }
 }
 
-class Break implements SSMLConvertAble {
-  constructor(
-    public time: number = 0.5,
-    public speechType: SpeechType = SpeechType.Ask
-  ) {}
+class Break implements Speech {
+  constructor(public time: number = 0.5) {}
 
   toSsml(): string {
     return SSML.addBreak(this.time);
   }
 }
 
-export { Speech, Reply, Credit, RawText, Break, SpeechType };
+export { Speech, Reply, Credit, RawText, Break };

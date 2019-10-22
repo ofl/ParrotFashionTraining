@@ -1,5 +1,5 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
-import Scenario from "./Scenario";
+import { Scenario } from "./Scenario";
 
 export default class UserStatusStore {
   static loadScenario(
@@ -10,13 +10,15 @@ export default class UserStatusStore {
       currentSentence: string;
       retryCount: number;
       readingSpeed: number;
+      practiceCount: number;
     };
 
     return new Scenario(
       data.articleId || "",
       data.currentSentence || "",
       data.retryCount || 0,
-      data.readingSpeed || Scenario.defaultReadingSpeed
+      data.readingSpeed || Scenario.defaultReadingSpeed,
+      data.practiceCount || 0
     );
   }
 
@@ -28,7 +30,8 @@ export default class UserStatusStore {
       articleId: scenario.articleId,
       currentSentence: scenario.currentSentence,
       retryCount: scenario.retryCount,
-      readingSpeed: scenario.readingSpeed
+      readingSpeed: scenario.readingSpeed,
+      practiceCount: scenario.practiceCount
     };
   }
 
@@ -39,7 +42,8 @@ export default class UserStatusStore {
       articleId: "",
       currentSentence: "",
       retryCount: 0,
-      readingSpeed: Scenario.defaultReadingSpeed
+      readingSpeed: Scenario.defaultReadingSpeed,
+      practiceCount: 0
     };
   }
 }
