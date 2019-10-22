@@ -25,12 +25,13 @@ app.intent("Default Welcome Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
+      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.welcome();
     }
   );
 });
 
-app.intent("User Answered Intent", async (conv, { answer }) => {
+app.intent("User Answered Handler", async (conv, { answer }) => {
   try {
     const scenario = UserStatusStore.loadScenario(conv);
 
@@ -51,6 +52,7 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
       return;
     }
 
+    conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
     conv.ask(scenario.toSsml());
   } catch (error) {
     console.error(error);
@@ -64,6 +66,7 @@ app.intent("Skip Article Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
+      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.skipArticle();
     }
   );
@@ -73,6 +76,7 @@ app.intent("Skip Sentence Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
+      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.skipSentence();
     }
   );
@@ -82,6 +86,7 @@ app.intent("Say It Again Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
+      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.sayAgain();
     }
   );
@@ -101,6 +106,7 @@ app.intent("Continue Confirmation Handler", async (conv, _, confirmation) => {
     await actScenario(
       conv,
       (scenario: Scenario): Promise<void> => {
+        conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
         return scenario.skipArticle();
       }
     );
