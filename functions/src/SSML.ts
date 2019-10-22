@@ -7,7 +7,7 @@ export default class SSML {
     return `<s>${message}</s>`;
   }
 
-  static encloseRawText(questionText: string, rate: string): string {
+  static encloseQuote(questionText: string, rate: string): string {
     return `<s><prosody rate="${rate}">${questionText}</prosody></s>`;
   }
 

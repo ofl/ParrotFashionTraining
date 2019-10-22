@@ -37,14 +37,20 @@ interface Speech {
 }
 
 class Reply implements Speech {
-  constructor(public keyword: string = "") {}
+  constructor(
+    public keyword: string = "",
+    public encloseSsml: boolean = true
+  ) {}
 
   toSsml(): string {
     if (this.keyword === "") {
       return "";
     }
-
-    return SSML.encloseMessage(Dictionary[this.keyword]);
+    if (this.encloseSsml) {
+      return SSML.encloseMessage(Dictionary[this.keyword]);
+    } else {
+      return Dictionary[this.keyword];
+    }
   }
 }
 
@@ -59,11 +65,19 @@ class Credit implements Speech {
   }
 }
 
-class RawText implements Speech {
+class Quote implements Speech {
   constructor(public text: string = "", public readingSpeed: number = 100) {}
 
   toSsml(): string {
-    return SSML.encloseRawText(` "${this.text}"`, `${this.readingSpeed}%`);
+    return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeed}%`);
+  }
+}
+
+class RawText implements Speech {
+  constructor(public text: string = "") {}
+
+  toSsml(): string {
+    return this.text;
   }
 }
 
@@ -75,4 +89,4 @@ class Break implements Speech {
   }
 }
 
-export { Speech, Reply, Credit, RawText, Break };
+export { Speech, Reply, Credit, Quote, RawText, Break };
