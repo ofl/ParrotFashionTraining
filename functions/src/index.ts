@@ -47,7 +47,7 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
 
     if (scenario.endStatus === EndStatus.Confirm) {
       conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
-      conv.ask(new Confirmation(scenario.toSsml()));
+      conv.ask(new Confirmation(scenario.toText()));
       return;
     }
 

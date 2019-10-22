@@ -34,23 +34,24 @@ const Dictionary: { [key: string]: string } = {
 
 interface Speech {
   toSsml(): string;
+  toText(): string;
 }
 
 class Reply implements Speech {
-  constructor(
-    public keyword: string = "",
-    public encloseSsml: boolean = true
-  ) {}
+  constructor(public keyword: string = "") {}
 
   toSsml(): string {
     if (this.keyword === "") {
       return "";
     }
-    if (this.encloseSsml) {
-      return SSML.encloseMessage(Dictionary[this.keyword]);
-    } else {
-      return Dictionary[this.keyword];
+    return SSML.encloseMessage(Dictionary[this.keyword]);
+  }
+
+  toText(): string {
+    if (this.keyword === "") {
+      return "";
     }
+    return Dictionary[this.keyword];
   }
 }
 
@@ -58,10 +59,12 @@ class Credit implements Speech {
   constructor(public publisher: string, public unixtime: number) {}
 
   toSsml(): string {
-    const fromNow = moment.unix(this.unixtime).fromNow();
-    const credit = `from ${this.publisher} ${fromNow}`;
+    return SSML.encloseMessage(this.toText());
+  }
 
-    return SSML.encloseMessage(credit);
+  toText(): string {
+    const fromNow = moment.unix(this.unixtime).fromNow();
+    return `from ${this.publisher} ${fromNow}`;
   }
 }
 
@@ -71,12 +74,20 @@ class Quote implements Speech {
   toSsml(): string {
     return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeed}%`);
   }
+
+  toText(): string {
+    return `"${this.text}"`;
+  }
 }
 
 class RawText implements Speech {
   constructor(public text: string = "") {}
 
   toSsml(): string {
+    return this.text;
+  }
+
+  toText(): string {
     return this.text;
   }
 }
@@ -86,6 +97,10 @@ class Break implements Speech {
 
   toSsml(): string {
     return SSML.addBreak(this.time);
+  }
+
+  toText(): string {
+    return " ";
   }
 }
 

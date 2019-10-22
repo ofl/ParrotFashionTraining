@@ -63,7 +63,7 @@ class Scenario {
         this.speeches.push(
           new RawText(`You have trained ${this.practiceCount} times.`)
         );
-        this.speeches.push(new Reply("CONTINUE_PRACTICE", false));
+        this.speeches.push(new Reply("CONTINUE_PRACTICE"));
         return;
       }
 
@@ -117,9 +117,17 @@ class Scenario {
       .map(speech => {
         return speech.toSsml();
       })
-      .join("");
+      .join(" ");
 
     return SSML.enclose(text);
+  }
+
+  toText(): string {
+    return this.speeches
+      .map(speech => {
+        return speech.toText();
+      })
+      .join(" ");
   }
 
   private mustRetry(retryCount: number, result: AnswerResult): boolean {
