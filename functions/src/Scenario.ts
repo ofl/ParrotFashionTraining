@@ -58,6 +58,8 @@ class Scenario {
       this.speeches.push(new Break(1.0));
       this.speeches.push(new Quote(questionText, this.readingSpeed));
     } else {
+      this.speeches.push(new Reply(this.getResultMessage(answerResult)));
+
       if (this.isPracticeConfirmationPeriod) {
         this.endStatus = EndStatus.Confirm;
         this.speeches.push(
@@ -70,7 +72,6 @@ class Scenario {
       const article = await this.findArticleForNextSentence();
       this.setNewPractice(article);
 
-      this.speeches.push(new Reply(this.getResultMessage(answerResult)));
       if (article.currentIndex === 0) {
         this.addArticleIntroduction(article);
       }
