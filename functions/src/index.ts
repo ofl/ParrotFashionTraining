@@ -16,6 +16,11 @@ import { Reply } from "./Speech";
 
 const app = dialogflow();
 
+const AppContexts = {
+  WAITING_ANSWER: "waiting_answer",
+  CONTINUE_PRACTICE: "continue_practice"
+};
+
 app.intent("Default Welcome Intent", async conv => {
   await actScenario(
     conv,
@@ -40,8 +45,8 @@ app.intent("User Answered Intent", async (conv, { answer }) => {
     await scenario.userAnswered(answer);
     UserStatusStore.saveScenario(conv, scenario);
 
-    if (scenario.isPracticeConfirmationPeriod) {
-      // conv.contexts = new Contexts()
+    if (scenario.endStatus === EndStatus.Confirm) {
+      conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
       conv.ask(new Confirmation(scenario.toSsml()));
       return;
     }
@@ -91,13 +96,22 @@ app.intent("Default Goodbye Intent", async conv => {
   );
 });
 
-app.intent("Continue Practice Intent", async conv => {
-  await actScenario(
-    conv,
-    (scenario: Scenario): Promise<void> => {
-      return scenario.sayGoodBye();
-    }
-  );
+app.intent("Continue Confirmation Handler", async (conv, _, confirmation) => {
+  if (confirmation) {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.skipArticle();
+      }
+    );
+  } else {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.sayGoodBye();
+      }
+    );
+  }
 });
 
 app.intent("Stop Practice Intent", async conv => {

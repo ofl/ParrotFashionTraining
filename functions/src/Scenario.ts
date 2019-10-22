@@ -2,13 +2,13 @@ import Article from "./Article";
 import ArticleStore from "./ArticleStore";
 import AnswerResult from "./AnswerResult";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
-import { Speech, Reply, Credit, RawText, Break } from "./Speech";
+import { Speech, Reply, Credit, RawText, Quote, Break } from "./Speech";
 import Utils from "./Utils";
 import SSML from "./SSML";
 
 const DEFAULT_READING_SPEED: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
-const CONFIRM_CONTINUE_INTERVAL = 20;
+const CONFIRM_CONTINUE_INTERVAL = 3;
 
 enum EndStatus {
   Continue,
@@ -56,14 +56,14 @@ class Scenario {
 
       this.speeches.push(new Reply(this.getResultMessage(answerResult, true)));
       this.speeches.push(new Break(1.0));
-      this.speeches.push(new RawText(questionText, this.readingSpeed));
+      this.speeches.push(new Quote(questionText, this.readingSpeed));
     } else {
       if (this.isPracticeConfirmationPeriod) {
         this.endStatus = EndStatus.Confirm;
         this.speeches.push(
           new RawText(`You have trained ${this.practiceCount} times.`)
         );
-        this.speeches.push(new Reply("CONTINUE_PRACTICE"));
+        this.speeches.push(new Reply("CONTINUE_PRACTICE", false));
         return;
       }
 
@@ -97,7 +97,7 @@ class Scenario {
     this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
 
     this.speakSlowly();
-    const questionText = new RawText(currentSentence, this.readingSpeed);
+    const questionText = new Quote(currentSentence, this.readingSpeed);
 
     this.speeches.push(new Break(1.0));
     this.speeches.push(questionText);
@@ -113,7 +113,7 @@ class Scenario {
   }
 
   toSsml(): string {
-    let text: string = this.speeches
+    const text: string = this.speeches
       .map(speech => {
         return speech.toSsml();
       })
