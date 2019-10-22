@@ -8,7 +8,7 @@ import SSML from "./SSML";
 
 const DEFAULT_READING_SPEED: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
-const CONFIRM_CONTINUE_INTERVAL = 3;
+const CONFIRM_CONTINUE_INTERVAL = 10;
 
 enum EndStatus {
   Continue,
@@ -80,11 +80,13 @@ class Scenario {
   }
 
   async skipArticle(): Promise<void> {
+    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
     this.speeches.push(new Reply("SKIP_ARTICLE"));
     await this.readNewArticle();
   }
 
   async skipSentence(): Promise<void> {
+    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
     this.speeches.push(new Reply("SKIP_SENTENCE"));
     await this.readNewSentence();
   }
