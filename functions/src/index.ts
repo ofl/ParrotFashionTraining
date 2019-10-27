@@ -12,7 +12,8 @@ import {
 import UserStatusStore from "./UserStatusStore";
 import Batch from "./Batch";
 import { Scenario, EndStatus } from "./Scenario";
-import { Reply } from "./Speech";
+import { Response } from "./SpeechComponent";
+import { Speech } from "./Speech";
 
 const app = dialogflow();
 
@@ -25,7 +26,6 @@ app.intent("Default Welcome Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.welcome();
     }
   );
@@ -39,26 +39,19 @@ app.intent("User Answered Handler", async (conv, { answer }) => {
       await scenario.skipArticle();
       UserStatusStore.saveScenario(conv, scenario);
 
-      conv.close(scenario.toSsml());
+      speak(conv, scenario.speeches);
       return;
     }
 
     await scenario.userAnswered(answer);
     UserStatusStore.saveScenario(conv, scenario);
 
-    if (scenario.endStatus === EndStatus.Confirm) {
-      conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
-      conv.ask(new Confirmation(scenario.toText()));
-      return;
-    }
-
-    conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
-    conv.ask(scenario.toSsml());
+    speak(conv, scenario.speeches);
   } catch (error) {
     console.error(error);
 
     UserStatusStore.resetScenario(conv);
-    conv.close(new Reply(error.message).toSsml());
+    conv.close(new Response(error.message).toSsml());
   }
 });
 
@@ -66,7 +59,6 @@ app.intent("Skip Article Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.skipArticle();
     }
   );
@@ -76,7 +68,6 @@ app.intent("Skip Sentence Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.skipSentence();
     }
   );
@@ -86,7 +77,6 @@ app.intent("Say It Again Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
       return scenario.sayAgain();
     }
   );
@@ -106,7 +96,6 @@ app.intent("Continue Confirmation Handler", async (conv, _, confirmation) => {
     await actScenario(
       conv,
       (scenario: Scenario): Promise<void> => {
-        conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
         return scenario.skipArticle();
       }
     );
@@ -140,17 +129,40 @@ const actScenario = async (
 
     UserStatusStore.saveScenario(conv, scenario);
 
-    if (scenario.endStatus === EndStatus.Continue) {
-      conv.ask(scenario.toSsml());
-    } else {
-      conv.close(scenario.toSsml());
-    }
+    speak(conv, scenario.speeches);
   } catch (error) {
     console.error(error);
 
     UserStatusStore.resetScenario(conv);
-    conv.close(new Reply(error.message).toSsml());
+    conv.close(new Response(error.message).toSsml());
   }
+};
+
+const speak = (
+  conv: DialogflowConversation<unknown, unknown, Contexts>,
+  speeches: Speech[]
+) => {
+  speeches.forEach(speech => {
+    switch (speech.endStatus) {
+      case EndStatus.Close:
+        conv.close(speech.toSsml());
+        break;
+
+      case EndStatus.Confirm:
+        conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
+        conv.ask(new Confirmation(speech.toText()));
+        break;
+
+      case EndStatus.WaitingAnswer:
+        conv.contexts.set(AppContexts.WAITING_ANSWER, 1);
+        conv.ask(speech.toSsml());
+        break;
+
+      default:
+        conv.ask(speech.toSsml());
+        break;
+    }
+  });
 };
 
 exports.dialogflowFirebaseFulfillment = functions.https.onRequest(app);
