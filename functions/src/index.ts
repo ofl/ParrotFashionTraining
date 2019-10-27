@@ -9,7 +9,7 @@ import {
   Confirmation
 } from "actions-on-google";
 
-import UserStatusStore from "./UserStatusStore";
+import StatusStore from "./StatusStore";
 import Batch from "./Batch";
 import { Scenario, EndStatus } from "./Scenario";
 import { Response } from "./SpeechComponent";
@@ -33,24 +33,24 @@ app.intent("Default Welcome Intent", async conv => {
 
 app.intent("User Answered Handler", async (conv, { answer }) => {
   try {
-    const scenario = UserStatusStore.loadScenario(conv);
+    const scenario = StatusStore.loadScenario(conv);
 
     if (typeof answer !== "string" || answer === "") {
       await scenario.skipArticle();
-      UserStatusStore.saveScenario(conv, scenario);
+      StatusStore.saveScenario(conv, scenario);
 
       speak(conv, scenario.speeches);
       return;
     }
 
     await scenario.userAnswered(answer);
-    UserStatusStore.saveScenario(conv, scenario);
+    StatusStore.saveScenario(conv, scenario);
 
     speak(conv, scenario.speeches);
   } catch (error) {
     console.error(error);
 
-    UserStatusStore.resetScenario(conv);
+    StatusStore.resetScenario(conv);
     conv.close(new Response(error.message).toSsml());
   }
 });
@@ -123,17 +123,17 @@ const actScenario = async (
   callback: (scenario: Scenario) => Promise<void>
 ) => {
   try {
-    const scenario = UserStatusStore.loadScenario(conv);
+    const scenario = StatusStore.loadScenario(conv);
 
     await callback(scenario);
 
-    UserStatusStore.saveScenario(conv, scenario);
+    StatusStore.saveScenario(conv, scenario);
 
     speak(conv, scenario.speeches);
   } catch (error) {
     console.error(error);
 
-    UserStatusStore.resetScenario(conv);
+    StatusStore.resetScenario(conv);
     conv.close(new Response(error.message).toSsml());
   }
 };

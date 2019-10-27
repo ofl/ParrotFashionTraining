@@ -1,7 +1,7 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
 import { Scenario } from "./Scenario";
 
-export default class UserStatusStore {
+export default class StatusStore {
   static loadScenario(
     conv: DialogflowConversation<unknown, unknown, Contexts>
   ) {
