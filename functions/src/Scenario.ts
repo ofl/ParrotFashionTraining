@@ -141,13 +141,13 @@ class Scenario {
   }
 
   private addConfirmation() {
-    this.continueSpeech([
-      new Break(),
-      new Response(`You have trained ${this.practiceCount} times.`),
-      new Break()
-    ]);
     this.addSpeech(
-      [new Response(Dictionary["CONTINUE_PRACTICE"])],
+      [
+        new Break(),
+        new Response(`You have trained ${this.practiceCount} times.`),
+        new Break(),
+        new Response(Dictionary["CONTINUE_PRACTICE"])
+      ],
       EndStatus.Confirm
     );
   }
@@ -221,12 +221,6 @@ class Scenario {
     endStatus: EndStatus = EndStatus.Continue
   ) {
     this.speeches.push(new Speech(components, endStatus));
-  }
-
-  private continueSpeech(components: SpeechComponent[]) {
-    components.forEach(component => {
-      this.speeches[this.speeches.length - 1].components.push(component);
-    });
   }
 
   private get isPracticeConfirmationPeriod(): boolean {

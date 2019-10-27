@@ -5,8 +5,7 @@ firebase.initializeApp();
 import {
   dialogflow,
   DialogflowConversation,
-  Contexts,
-  Confirmation
+  Contexts
 } from "actions-on-google";
 
 import StatusStore from "./StatusStore";
@@ -91,8 +90,8 @@ app.intent("Default Goodbye Intent", async conv => {
   );
 });
 
-app.intent("Continue Confirmation Handler", async (conv, _, confirmation) => {
-  if (confirmation) {
+app.intent("Continue Confirmation Handler", async (conv, { Boolean }) => {
+  if (Boolean === "true") {
     await actScenario(
       conv,
       (scenario: Scenario): Promise<void> => {
@@ -150,7 +149,7 @@ const speak = (
 
       case EndStatus.Confirm:
         conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
-        conv.ask(new Confirmation(speech.toText()));
+        conv.ask(speech.toSsml());
         break;
 
       case EndStatus.WaitingAnswer:
