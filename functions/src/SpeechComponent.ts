@@ -49,9 +49,6 @@ class Response implements SpeechComponent {
   }
 
   toText(): string {
-    if (this.text === "") {
-      return "";
-    }
     return this.text;
   }
 }
@@ -101,18 +98,6 @@ class Quote implements SpeechComponent {
   }
 }
 
-class PlainText implements SpeechComponent {
-  constructor(public text: string = "") {}
-
-  toSsml(): string {
-    return this.text;
-  }
-
-  toText(): string {
-    return this.text;
-  }
-}
-
 class Break implements SpeechComponent {
   constructor(public time: number = 0.5) {}
 
@@ -132,6 +117,5 @@ export {
   RandomResponse,
   Credit,
   Quote,
-  PlainText,
   Break
 };

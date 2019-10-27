@@ -9,7 +9,6 @@ import {
   Response,
   RandomResponse,
   Credit,
-  PlainText,
   Quote,
   Break
 } from "./SpeechComponent";
@@ -35,6 +34,7 @@ class Scenario {
 
   async welcome(): Promise<void> {
     this.reset();
+
     this.addSpeech([
       new Response(Dictionary["WELCOME"]),
       new RandomResponse("YELL", 3)
@@ -45,7 +45,6 @@ class Scenario {
 
   async userAnswered(answer: string): Promise<void> {
     const questionText = this.currentSentence;
-
     if (questionText === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
@@ -57,22 +56,14 @@ class Scenario {
       this.speakSlowly();
 
       if (!answerResult.isPoor) {
-        this.addSpeech([this.getResultMessage(answerResult)]);
+        this.addSpeech([this.getResultResponse(answerResult)]);
       }
       this.addPractice(questionText);
     } else {
-      this.addSpeech([this.getResultMessage(answerResult)]);
+      this.addSpeech([this.getResultResponse(answerResult)]);
 
       if (this.isPracticeConfirmationPeriod) {
-        this.continueSpeech([
-          new Break(),
-          new PlainText(`You have trained ${this.practiceCount} times.`),
-          new Break()
-        ]);
-        this.addSpeech(
-          [new Response(Dictionary["CONTINUE_PRACTICE"])],
-          EndStatus.Confirm
-        );
+        this.addConfirmation();
         return;
       }
 
@@ -114,17 +105,6 @@ class Scenario {
     this.addSpeech([new RandomResponse("BYE", 3)], EndStatus.Close);
   }
 
-  get isPracticeConfirmationPeriod(): boolean {
-    return this.practiceCount % CONFIRM_CONTINUE_INTERVAL === 0;
-  }
-
-  private mustRetry(retryCount: number, result: AnswerResult): boolean {
-    if (retryCount >= MAX_RETRY_COUNT) {
-      return false;
-    }
-    return result.isPoor || result.isRegrettable;
-  }
-
   private async readNewSentence(): Promise<void> {
     const article = await this.findArticleForNextSentence();
     this.setNewPractice(article);
@@ -160,6 +140,18 @@ class Scenario {
     }
   }
 
+  private addConfirmation() {
+    this.continueSpeech([
+      new Break(),
+      new Response(`You have trained ${this.practiceCount} times.`),
+      new Break()
+    ]);
+    this.addSpeech(
+      [new Response(Dictionary["CONTINUE_PRACTICE"])],
+      EndStatus.Confirm
+    );
+  }
+
   private async findArticleForNextSentence(): Promise<Article> {
     try {
       let article: Article;
@@ -183,7 +175,7 @@ class Scenario {
     }
   }
 
-  private getResultMessage(result: AnswerResult): RandomResponse {
+  private getResultResponse(result: AnswerResult): RandomResponse {
     if (result.isExcellent) {
       return new RandomResponse("EXCELLENT", 2);
     } else if (result.isGood) {
@@ -235,6 +227,17 @@ class Scenario {
     components.forEach(component => {
       this.speeches[this.speeches.length - 1].components.push(component);
     });
+  }
+
+  private get isPracticeConfirmationPeriod(): boolean {
+    return this.practiceCount % CONFIRM_CONTINUE_INTERVAL === 0;
+  }
+
+  private mustRetry(retryCount: number, result: AnswerResult): boolean {
+    if (retryCount >= MAX_RETRY_COUNT) {
+      return false;
+    }
+    return result.isPoor || result.isRegrettable;
   }
 }
 
