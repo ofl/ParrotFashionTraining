@@ -2,23 +2,23 @@ import Article from "./Article";
 import ArticleStore from "./ArticleStore";
 import AnswerResult from "./AnswerResult";
 import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
-import { Speech, Reply, Credit, RawText, Quote, Break } from "./Speech";
-import Utils from "./Utils";
-import SSML from "./SSML";
+import { Speech, EndStatus } from "./Speech";
+import {
+  SpeechComponent,
+  Dictionary,
+  Response,
+  RandomResponse,
+  Credit,
+  Quote,
+  Break
+} from "./SpeechComponent";
 
 const DEFAULT_READING_SPEED: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
 const CONFIRM_CONTINUE_INTERVAL = 10;
 
-enum EndStatus {
-  Continue,
-  Confirm,
-  Close
-}
-
 class Scenario {
   speeches: Speech[] = [];
-  endStatus: EndStatus = EndStatus.Continue;
 
   constructor(
     public articleId: string = "",
@@ -35,15 +35,16 @@ class Scenario {
   async welcome(): Promise<void> {
     this.reset();
 
-    this.speeches.push(new Reply("WELCOME"));
-    this.speeches.push(new Reply(Utils.randomMessage("YELL", 3)));
+    this.addSpeech([
+      new Response(Dictionary["WELCOME"]),
+      new RandomResponse("YELL", 3)
+    ]);
 
-    await this.readNewArticle();
+    await this.readNewSentence();
   }
 
   async userAnswered(answer: string): Promise<void> {
     const questionText = this.currentSentence;
-
     if (questionText === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
@@ -54,90 +55,54 @@ class Scenario {
       this.incrementRetryCount();
       this.speakSlowly();
 
-      this.speeches.push(new Reply(this.getResultMessage(answerResult, true)));
-      this.speeches.push(new Break(1.0));
-      this.speeches.push(new Quote(questionText, this.readingSpeed));
+      if (!answerResult.isPoor) {
+        this.addSpeech([this.getResultResponse(answerResult)]);
+      }
+      this.addPractice(questionText);
     } else {
-      this.speeches.push(new Reply(this.getResultMessage(answerResult)));
+      this.addSpeech([this.getResultResponse(answerResult)]);
 
       if (this.isPracticeConfirmationPeriod) {
-        this.endStatus = EndStatus.Confirm;
-        this.speeches.push(
-          new RawText(`You have trained ${this.practiceCount} times.`)
-        );
-        this.speeches.push(new Reply("CONTINUE_PRACTICE"));
+        this.addConfirmation();
         return;
       }
 
-      const article = await this.findArticleForNextSentence();
-      this.setNewPractice(article);
-
-      if (article.currentIndex === 0) {
-        this.addArticleIntroduction(article);
-      }
-      this.startPractice(article.currentSentence);
+      await this.readNewSentence();
     }
   }
 
   async skipArticle(): Promise<void> {
-    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
-    this.speeches.push(new Reply("SKIP_ARTICLE"));
-    await this.readNewArticle();
+    this.addSpeech([
+      new RandomResponse("ACCEPTED", 3),
+      new Response(Dictionary["SKIP_ARTICLE"])
+    ]);
+
+    await this.readNewSentence();
   }
 
   async skipSentence(): Promise<void> {
-    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
-    this.speeches.push(new Reply("SKIP_SENTENCE"));
+    this.addSpeech([
+      new RandomResponse("ACCEPTED", 3),
+      new Response(Dictionary["SKIP_SENTENCE"])
+    ]);
+
     await this.readNewSentence();
   }
 
   async sayAgain(): Promise<void> {
+    this.speakSlowly();
+
     const currentSentence = this.currentSentence;
     if (currentSentence === "") {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    this.speeches.push(new Reply(Utils.randomMessage("ACCEPTED", 3)));
-
-    this.speakSlowly();
-    const questionText = new Quote(currentSentence, this.readingSpeed);
-
-    this.speeches.push(new Break(1.0));
-    this.speeches.push(questionText);
+    this.addSpeech([new RandomResponse("ACCEPTED", 3)]);
+    this.addPractice(currentSentence);
   }
 
   async sayGoodBye(): Promise<void> {
-    this.endStatus = EndStatus.Close;
-    this.speeches.push(new Reply(Utils.randomMessage("BYE", 3)));
-  }
-
-  get isPracticeConfirmationPeriod(): boolean {
-    return this.practiceCount % CONFIRM_CONTINUE_INTERVAL === 0;
-  }
-
-  toSsml(): string {
-    const text: string = this.speeches
-      .map(speech => {
-        return speech.toSsml();
-      })
-      .join(" ");
-
-    return SSML.enclose(text);
-  }
-
-  toText(): string {
-    return this.speeches
-      .map(speech => {
-        return speech.toText();
-      })
-      .join(" ");
-  }
-
-  private mustRetry(retryCount: number, result: AnswerResult): boolean {
-    if (retryCount >= MAX_RETRY_COUNT) {
-      return false;
-    }
-    return result.isPoor || result.isRegrettable;
+    this.addSpeech([new RandomResponse("BYE", 3)], EndStatus.Close);
   }
 
   private async readNewSentence(): Promise<void> {
@@ -149,20 +114,42 @@ class Scenario {
       throw new CurrentSentenceNotFound("NOT_FOUND");
     }
 
-    this.startPractice(questionText);
+    this.addPractice(questionText, article);
   }
 
-  private async readNewArticle(): Promise<void> {
-    const article = await this.findArticleForNextSentence();
-    this.setNewPractice(article);
-
-    const questionText = article.currentSentence;
-    if (questionText === "") {
-      throw new CurrentSentenceNotFound("NOT_FOUND");
+  private addPractice(questionText: string, article?: Article) {
+    if (article instanceof Article && article.currentIndex === 0) {
+      this.addSpeech(
+        [
+          new Break(),
+          new Response(Dictionary["INTRODUCTION"]),
+          new Quote(article.title),
+          new Credit(article.publisher, article.unixtime),
+          new Break(),
+          new Response(Dictionary["REPEAT_AFTER_ME"]),
+          new Break(1.0),
+          new Quote(questionText, this.readingSpeed)
+        ],
+        EndStatus.WaitingAnswer
+      );
+    } else {
+      this.addSpeech(
+        [new Break(1.0), new Quote(questionText, this.readingSpeed)],
+        EndStatus.WaitingAnswer
+      );
     }
+  }
 
-    this.addArticleIntroduction(article);
-    this.startPractice(questionText);
+  private addConfirmation() {
+    this.addSpeech(
+      [
+        new Break(),
+        new Response(`You have trained ${this.practiceCount} times.`),
+        new Break(),
+        new Response(Dictionary["CONTINUE_PRACTICE"])
+      ],
+      EndStatus.Confirm
+    );
   }
 
   private async findArticleForNextSentence(): Promise<Article> {
@@ -188,20 +175,16 @@ class Scenario {
     }
   }
 
-  private getResultMessage(
-    result: AnswerResult,
-    retrying: boolean = false
-  ): string {
+  private getResultResponse(result: AnswerResult): RandomResponse {
     if (result.isExcellent) {
-      return Utils.randomMessage("EXCELLENT", 2);
+      return new RandomResponse("EXCELLENT", 2);
     } else if (result.isGood) {
-      return Utils.randomMessage("GOOD", 3);
+      return new RandomResponse("GOOD", 3);
     } else if (result.isRegrettable) {
-      return Utils.randomMessage("REGRETTABLE", 2);
-    } else if (!retrying) {
-      return Utils.randomMessage("POOR", 2);
+      return new RandomResponse("REGRETTABLE", 2);
+    } else {
+      return new RandomResponse("POOR", 2);
     }
-    return "";
   }
 
   private speakSlowly() {
@@ -233,18 +216,22 @@ class Scenario {
     this.readingSpeed = Scenario.defaultReadingSpeed;
   }
 
-  private addArticleIntroduction(article: Article) {
-    this.speeches.push(new Break());
-    this.speeches.push(new Reply("INTRODUCTION"));
-    this.speeches.push(new RawText(article.title));
-    this.speeches.push(new Credit(article.publisher, article.unixtime));
-    this.speeches.push(new Break());
-    this.speeches.push(new Reply("REPEAT_AFTER_ME"));
+  private addSpeech(
+    components: SpeechComponent[],
+    endStatus: EndStatus = EndStatus.Continue
+  ) {
+    this.speeches.push(new Speech(components, endStatus));
   }
 
-  private startPractice(questionText: string) {
-    this.speeches.push(new Break(1.0));
-    this.speeches.push(new RawText(questionText));
+  private get isPracticeConfirmationPeriod(): boolean {
+    return this.practiceCount % CONFIRM_CONTINUE_INTERVAL === 0;
+  }
+
+  private mustRetry(retryCount: number, result: AnswerResult): boolean {
+    if (retryCount >= MAX_RETRY_COUNT) {
+      return false;
+    }
+    return result.isPoor || result.isRegrettable;
   }
 }
 
