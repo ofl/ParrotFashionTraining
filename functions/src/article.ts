@@ -1,4 +1,7 @@
+import { DocumentData } from "@google-cloud/firestore";
+import * as moment from "moment";
 import Utils from "./Utils";
+import TextSplitter from "./TextSplitter";
 
 const NEWS_SOURCES: { [key: string]: string } = {
   "nytimes.com": "New York Times",
@@ -6,6 +9,8 @@ const NEWS_SOURCES: { [key: string]: string } = {
   "reuters.com": "Reuters",
   "bbc.co.uk": "BBC"
 };
+const MAX_WORD_COUNT_IN_SENTENCE = 9;
+const DAYS_BEFORE = 9;
 
 export default class Article {
   private currentIndex: number;
@@ -21,6 +26,42 @@ export default class Article {
     this.currentIndex = 0;
   }
 
+  static bulkCreateFromDictionaries(
+    dictionaries: { [key: string]: string }[]
+  ): Article[] {
+    const articles: Article[] = dictionaries.map(dictionary => {
+      return this.createFromDictionary(dictionary);
+    });
+
+    return articles
+      .filter(article => !article.isTooOld())
+      .filter(article => !article.hasTooManyWordInSentence());
+  }
+
+  static createFromDocumentData(data: DocumentData): Article {
+    return new Article(
+      data.guid,
+      data.title,
+      data.body,
+      data.sentences,
+      data.creator,
+      data.unixtime
+    );
+  }
+
+  static createFromDictionary(dictionary: { [key: string]: string }): Article {
+    const sentences: string[] = TextSplitter.run(dictionary.contentSnippet);
+    const unixTimeOfPublishedAt = moment(dictionary.isoDate).unix();
+
+    return new Article(
+      dictionary.guid,
+      dictionary.title,
+      dictionary.contentSnippet,
+      sentences,
+      dictionary.creator,
+      unixTimeOfPublishedAt
+    );
+  }
 
   setIndex(currentQuestionText: string) {
     this.currentIndex = this.sentences.indexOf(currentQuestionText);
@@ -61,4 +102,15 @@ export default class Article {
     return this.currentIndex === 0;
   }
 
+  hasTooManyWordInSentence(max: number = MAX_WORD_COUNT_IN_SENTENCE): boolean {
+    return Utils.maxWordCountInSentences(this.sentences) > max;
+  }
+
+  isTooOld(days: number = DAYS_BEFORE): boolean {
+    const daysFromNow: number = moment()
+      .add(-days, "day")
+      .unix();
+
+    return this.unixtime < daysFromNow;
+  }
 }

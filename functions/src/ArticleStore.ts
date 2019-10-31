@@ -1,25 +1,20 @@
 import * as firebase from "firebase-admin";
-import { WhereFilterOp, Query } from "@google-cloud/firestore";
 import * as moment from "moment";
 
 import Article from "./Article";
-import Utils from "./Utils";
-import TextSplitter from "./TextSplitter";
 import { AvailableArticleNotExist, ArticleNotFound } from "./errors";
+import Utils from "./Utils";
+
+import { Query } from "@google-cloud/firestore";
 
 const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
-const MAX_WORDS_COUNT = 9;
 
 export default class ArticleStore {
-  static async findLatest(
+  static async findLatestBefore(
     unixtime: number = moment().unix()
   ): Promise<Article> {
-    const query = firestore
-      .collection(ARTICLE_COLLECTION_PATH)
-      .where("unixtime", "<", unixtime)
-      .orderBy("unixtime", "desc");
-
+    const query = this.getQueryPublishedBefore(unixtime);
     return await this.findOne(query);
   }
 
@@ -39,29 +34,22 @@ export default class ArticleStore {
     return await this.findLatestBefore(currentArticle.unixtime);
   }
 
-  static queryOfPublishedBefore(
-    unixtime: number,
-    opStr: WhereFilterOp = "<"
-  ): Query {
+  static getQueryPublishedBefore(unixtime: number): Query {
     return firestore
       .collection(ARTICLE_COLLECTION_PATH)
-      .where("unixtime", opStr, unixtime)
+      .where("unixtime", "<", unixtime)
       .orderBy("unixtime", "desc");
   }
 
-  static async batchCreate(
-    contents: { [key: string]: string }[],
-    days: number = 1
+  static async bulkCreate(
+    dictionaries: { [key: string]: string }[]
   ): Promise<void> {
     const batch = firestore.batch();
 
-    const currentArticles = this.filterOldOrLongSentenceArticles(
-      contents,
-      days
-    );
-    console.log(`creating ${currentArticles.length} articles`);
+    const articles = Article.bulkCreateFromDictionaries(dictionaries);
+    console.log(`creating ${articles.length} articles`);
 
-    currentArticles.forEach(article => {
+    articles.forEach(article => {
       batch.set(
         firestore
           .collection(ARTICLE_COLLECTION_PATH)
@@ -73,12 +61,12 @@ export default class ArticleStore {
     await batch.commit();
   }
 
-  static async batchDelete(
+  static async bulkDelete(
     snapshot: FirebaseFirestore.QuerySnapshot
   ): Promise<void> {
-    const batch = firestore.batch();
-
     console.log(`deleting ${snapshot.docs.length} articles`);
+
+    const batch = firestore.batch();
 
     snapshot.docs.forEach(doc => {
       batch.delete(doc.ref);
@@ -92,82 +80,31 @@ export default class ArticleStore {
       .collection(ARTICLE_COLLECTION_PATH)
       .doc(articleId)
       .get();
-    const data = doc.data();
 
+    const data = doc.data();
     if (!data) {
       throw new ArticleNotFound("Article not found");
-    } else {
-      return new Article(
-        data.guid,
-        data.title,
-        data.body,
-        data.sentences,
-        data.creator,
-        data.unixtime
-      );
     }
+
+    return Article.createFromDocumentData(data);
   }
 
   private static async findOne(query: Query): Promise<Article> {
     const snapshot = await query.limit(1).get();
-    const articles: Article[] = await this.loadList(snapshot);
+    const articles: Article[] = await this.list(snapshot);
 
-    if (articles.length > 0) {
-      return articles[0];
-    } else {
+    if (articles.length === 0) {
       throw new AvailableArticleNotExist("NOT_EXIST");
     }
+
+    return articles[0];
   }
 
-  private static async loadList(
+  private static async list(
     snapshot: FirebaseFirestore.QuerySnapshot
   ): Promise<Article[]> {
     return snapshot.docs.map(doc => {
-      const data = doc.data();
-      return new Article(
-        data.guid,
-        data.title,
-        data.body,
-        data.sentences,
-        data.creator,
-        data.unixtime
-      );
+      return Article.createFromDocumentData(doc.data());
     });
-  }
-
-  private static filterOldOrLongSentenceArticles(
-    contents: { [key: string]: string }[],
-    days: number
-  ): Article[] {
-    const articles: Article[] = [];
-
-    contents.forEach(content => {
-      const sentences: string[] = TextSplitter.run(content.contentSnippet);
-      const unixTimeOfPublishedAt = moment(content.isoDate).unix();
-
-      if (Utils.maxWordCountInSentences(sentences) > MAX_WORDS_COUNT) {
-        return;
-      }
-
-      articles.push(
-        new Article(
-          content.guid,
-          content.title,
-          content.contentSnippet,
-          sentences,
-          content.creator,
-          unixTimeOfPublishedAt
-        )
-      );
-    });
-
-    const daysFromNowUnixtime: number = moment()
-      .add(-days, "day")
-      .unix();
-    const currentArticles = articles.filter(
-      article => article.unixtime > daysFromNowUnixtime
-    );
-
-    return currentArticles;
   }
 }
