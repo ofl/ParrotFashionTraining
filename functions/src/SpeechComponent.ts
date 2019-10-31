@@ -102,7 +102,7 @@ class Break implements SpeechComponent {
   constructor(public time: number = 0.5) {}
 
   toSsml(): string {
-    return SSML.addBreak(this.time);
+    return SSML.break(this.time);
   }
 
   toText(): string {
