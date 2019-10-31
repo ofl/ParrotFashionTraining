@@ -11,7 +11,7 @@ export default class SSML {
     return `<s><prosody rate="${rate}">${questionText}</prosody></s>`;
   }
 
-  static addBreak(time: number = 0.5): string {
+  static break(time: number = 0.5): string {
     return `<break time="${time}s" />`;
   }
 }

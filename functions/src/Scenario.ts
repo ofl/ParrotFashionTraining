@@ -1,7 +1,7 @@
 import Article from "./Article";
 import ArticleStore from "./ArticleStore";
 import AnswerResult from "./AnswerResult";
-import { ArticleNotFound, CurrentSentenceNotFound } from "./errors";
+import { ArticleNotFound, QuestionTextNotFound } from "./errors";
 import { Speech, EndStatus } from "./Speech";
 import {
   SpeechComponent,
@@ -22,7 +22,7 @@ class Scenario {
 
   constructor(
     public articleId: string = "",
-    public currentSentence: string = "",
+    public questionText: string = "",
     public retryCount: number = 0,
     public readingSpeed: number = Scenario.defaultReadingSpeed,
     public practiceCount: number = 0
@@ -44,9 +44,9 @@ class Scenario {
   }
 
   async userAnswered(answer: string): Promise<void> {
-    const questionText = this.currentSentence;
+    const questionText = this.questionText;
     if (questionText === "") {
-      throw new CurrentSentenceNotFound("NOT_FOUND");
+      throw new QuestionTextNotFound("NOT_FOUND");
     }
 
     const answerResult = AnswerResult.get(questionText, answer);
@@ -92,13 +92,12 @@ class Scenario {
   async sayAgain(): Promise<void> {
     this.speakSlowly();
 
-    const currentSentence = this.currentSentence;
-    if (currentSentence === "") {
-      throw new CurrentSentenceNotFound("NOT_FOUND");
+    if (this.questionText === "") {
+      throw new QuestionTextNotFound("NOT_FOUND");
     }
 
     this.addSpeech([new RandomResponse("ACCEPTED", 3)]);
-    this.addPractice(currentSentence);
+    this.addPractice(this.questionText);
   }
 
   async sayGoodBye(): Promise<void> {
@@ -109,16 +108,15 @@ class Scenario {
     const article = await this.findArticleForNextSentence();
     this.setNewPractice(article);
 
-    const questionText = article.currentSentence;
-    if (questionText === "") {
-      throw new CurrentSentenceNotFound("NOT_FOUND");
+    if (this.questionText === "") {
+      throw new QuestionTextNotFound("NOT_FOUND");
     }
 
-    this.addPractice(questionText, article);
+    this.addPractice(this.questionText, article);
   }
 
   private addPractice(questionText: string, article?: Article) {
-    if (article instanceof Article && article.currentIndex === 0) {
+    if (article instanceof Article && article.isFirstQuestionText) {
       this.addSpeech(
         [
           new Break(),
@@ -157,11 +155,11 @@ class Scenario {
       let article: Article;
 
       if (this.articleId === "") {
-        article = await ArticleStore.findLatest();
+        article = await ArticleStore.findLatestBefore();
       } else {
-        article = await ArticleStore.getNextArticleOrIncrementIndexOfSentences(
+        article = await ArticleStore.getIncludingNextQuestionText(
           this.articleId,
-          this.currentSentence
+          this.questionText
         );
       }
 
@@ -204,7 +202,7 @@ class Scenario {
   private setNewPractice(article: Article) {
     this.articleId = article.guid;
     this.retryCount = 0;
-    this.currentSentence = article.currentSentence;
+    this.questionText = article.questionText;
     this.readingSpeed = Scenario.defaultReadingSpeed;
     this.incrementPracticeCount();
   }
@@ -212,7 +210,7 @@ class Scenario {
   private reset() {
     this.articleId = "";
     this.retryCount = 0;
-    this.currentSentence = "";
+    this.questionText = "";
     this.readingSpeed = Scenario.defaultReadingSpeed;
   }
 

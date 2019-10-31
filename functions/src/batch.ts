@@ -1,7 +1,8 @@
+import * as moment from "moment";
+
 import Utils from "./Utils";
 import Crawler from "./Crawler";
 import ArticleStore from "./ArticleStore";
-import * as moment from "moment";
 
 const SOURCES: string[] = [
   "http://feeds.nytimes.com/nyt/rss/World",
@@ -47,25 +48,25 @@ const SOURCES: string[] = [
 ];
 
 export default class Batch {
-  static async createArticlesFromRSS() {
+  static async createArticlesFromRSS(): Promise<void> {
     const contents = await Crawler.getFeedContents(
       Utils.selectRandomly(SOURCES)
     );
 
-    return ArticleStore.batchCreate(contents);
+    return ArticleStore.bulkCreate(contents);
   }
 
   static async deleteOldArticles(days: number = 1): Promise<void> {
     const unixtime: number = moment()
       .add(-days, "day")
       .unix();
-    const snapshot = await ArticleStore.queryOfPublishedBefore(unixtime).get();
+    const snapshot = await ArticleStore.getQueryPublishedBefore(unixtime).get();
 
     if (snapshot.size === 0) {
       console.log("nothing to delete");
       return;
     }
 
-    return ArticleStore.batchDelete(snapshot);
+    return ArticleStore.bulkDelete(snapshot);
   }
 }

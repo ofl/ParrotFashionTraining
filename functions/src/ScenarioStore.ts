@@ -1,13 +1,11 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
 import { Scenario } from "./Scenario";
 
-export default class StatusStore {
-  static loadScenario(
-    conv: DialogflowConversation<unknown, unknown, Contexts>
-  ) {
+export default class ScenarioStore {
+  static load(conv: DialogflowConversation<unknown, unknown, Contexts>) {
     const data = conv.data as {
       articleId: string;
-      currentSentence: string;
+      questionText: string;
       retryCount: number;
       readingSpeed: number;
       practiceCount: number;
@@ -15,32 +13,30 @@ export default class StatusStore {
 
     return new Scenario(
       data.articleId || "",
-      data.currentSentence || "",
+      data.questionText || "",
       data.retryCount || 0,
       data.readingSpeed || Scenario.defaultReadingSpeed,
       data.practiceCount || 0
     );
   }
 
-  static saveScenario(
+  static save(
     conv: DialogflowConversation<unknown, unknown, Contexts>,
     scenario: Scenario
   ) {
     conv.data = {
       articleId: scenario.articleId,
-      currentSentence: scenario.currentSentence,
+      questionText: scenario.questionText,
       retryCount: scenario.retryCount,
       readingSpeed: scenario.readingSpeed,
       practiceCount: scenario.practiceCount
     };
   }
 
-  static resetScenario(
-    conv: DialogflowConversation<unknown, unknown, Contexts>
-  ) {
+  static reset(conv: DialogflowConversation<unknown, unknown, Contexts>) {
     conv.data = {
       articleId: "",
-      currentSentence: "",
+      questionText: "",
       retryCount: 0,
       readingSpeed: Scenario.defaultReadingSpeed,
       practiceCount: 0
