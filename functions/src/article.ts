@@ -8,7 +8,7 @@ const NEWS_SOURCES: { [key: string]: string } = {
 };
 
 export default class Article {
-  currentIndex: number;
+  private currentIndex: number;
 
   constructor(
     readonly guid: string,
@@ -19,6 +19,11 @@ export default class Article {
     readonly unixtime: number
   ) {
     this.currentIndex = 0;
+  }
+
+
+  setIndex(currentQuestionText: string) {
+    this.currentIndex = this.sentences.indexOf(currentQuestionText);
   }
 
   toObject(): Object {
@@ -32,7 +37,11 @@ export default class Article {
     };
   }
 
-  get currentSentence(): string {
+  incrementIndex() {
+    this.currentIndex++;
+  }
+
+  get questionText(): string {
     return this.sentences[this.currentIndex];
   }
 
@@ -43,4 +52,13 @@ export default class Article {
   get newsSource(): string | null {
     return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
   }
+
+  get hasNextQuestionText(): boolean {
+    return this.currentIndex < this.sentences.length - 1;
+  }
+
+  get isFirstQuestionText(): boolean {
+    return this.currentIndex === 0;
+  }
+
 }

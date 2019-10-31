@@ -23,20 +23,20 @@ export default class ArticleStore {
     return await this.findOne(query);
   }
 
-  static async getNextArticleOrIncrementIndexOfSentences(
+  static async getIncludingNextQuestionText(
     articleId: string,
-    currentSentence: string
+    currentQuestionText: string
   ): Promise<Article> {
     const currentArticle = await this.get(Utils.md5hex(articleId));
+    currentArticle.setIndex(currentQuestionText);
 
-    const nextIndex = currentArticle.sentences.indexOf(currentSentence) + 1;
-    if (nextIndex > 0 && nextIndex < currentArticle.sentences.length) {
-      currentArticle.currentIndex = nextIndex;
+    if (currentArticle.hasNextQuestionText) {
+      currentArticle.incrementIndex();
 
       return currentArticle;
     }
 
-    return await this.findLatest(currentArticle.unixtime);
+    return await this.findLatestBefore(currentArticle.unixtime);
   }
 
   static queryOfPublishedBefore(

@@ -20,8 +20,8 @@ class ArticleNotFound extends ApplicationError {
   public name = "ArticleNotFound";
 }
 
-class CurrentSentenceNotFound extends ApplicationError {
-  public name = "CurrentSentenceNotFound";
+class QuestionTextNotFound extends ApplicationError {
+  public name = "QuestionTextNotFound";
 }
 
 export {
@@ -29,5 +29,5 @@ export {
   UserDataLoadError,
   ArticleNotFound,
   AvailableArticleNotExist,
-  CurrentSentenceNotFound
+  QuestionTextNotFound
 };
