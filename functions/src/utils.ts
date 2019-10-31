@@ -1,20 +1,6 @@
 const crypto = require("crypto");
-const levenshtein = require("js-levenshtein");
 
 export default class Utils {
-  static textSimilarity(original: string, target: string): number {
-    const originalSentence = this.removePunctuations(original);
-    const targetSentence = this.removePunctuations(target);
-
-    const result: number = levenshtein(originalSentence, targetSentence);
-    const originalSentenceLength = originalSentence.length;
-    const difference: number = Math.max(result - originalSentenceLength / 8, 0);
-    const rate =
-      ((originalSentenceLength - difference) / originalSentenceLength) * 100;
-
-    return Math.floor(rate);
-  }
-
   static md5hex(str: string) {
     const md5 = crypto.createHash("md5");
     return md5.update(str, "binary").digest("hex");
@@ -60,13 +46,5 @@ export default class Utils {
 
   static countWord(text: string): number {
     return text.split(/\b\s\b/).length;
-  }
-
-  static removePunctuations(string: string): string {
-    const matchedArray = string.match(/\w+/g);
-    if (matchedArray === null) {
-      return "";
-    }
-    return matchedArray.join(" ");
   }
 }
