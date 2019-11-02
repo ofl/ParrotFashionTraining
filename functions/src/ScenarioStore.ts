@@ -1,7 +1,7 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
 import { Scenario } from "./Scenario";
 
-const DEFAULT_READING_SPEED_RATE: number = 100; // (%)
+const DEFAULT_SPEAKING_SPEED_RATE: number = 100; // (%)
 
 export default class ScenarioStore {
   static load(conv: DialogflowConversation<unknown, unknown, Contexts>) {
@@ -10,7 +10,7 @@ export default class ScenarioStore {
       questionText: string;
       practiceCount: number;
       retryCount: number;
-      readingSpeedRate: number;
+      speakingSpeedRate: number;
     };
 
     return new Scenario(
@@ -18,7 +18,7 @@ export default class ScenarioStore {
       data.questionText || "",
       data.practiceCount || 0,
       data.retryCount || 0,
-      data.readingSpeedRate || DEFAULT_READING_SPEED_RATE
+      data.speakingSpeedRate || DEFAULT_SPEAKING_SPEED_RATE
     );
   }
 
@@ -31,7 +31,7 @@ export default class ScenarioStore {
       questionText: scenario.questionText,
       practiceCount: scenario.practiceCount,
       retryCount: scenario.retryCount,
-      readingSpeedRate: scenario.readingSpeedRate
+      speakingSpeedRate: scenario.speakingSpeedRate
     };
   }
 
@@ -41,7 +41,7 @@ export default class ScenarioStore {
       questionText: "",
       practiceCount: 0,
       retryCount: 0,
-      readingSpeedRate: DEFAULT_READING_SPEED_RATE
+      speakingSpeedRate: DEFAULT_SPEAKING_SPEED_RATE
     };
   }
 }

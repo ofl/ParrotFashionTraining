@@ -13,7 +13,7 @@ import {
   Break
 } from "./SpeechComponent";
 
-const DEFAULT_READING_SPEED_RATE: number = 100; // (%)
+const DEFAULT_SPEAKING_SPEED_RATE: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
 const CONFIRMATION_INTERVAL = 10;
 
@@ -25,7 +25,7 @@ class Scenario {
     public questionText: string = "",
     public practiceCount: number = 0,
     public retryCount: number = 0,
-    public readingSpeedRate: number = DEFAULT_READING_SPEED_RATE
+    public speakingSpeedRate: number = DEFAULT_SPEAKING_SPEED_RATE
   ) {}
 
   async welcome(): Promise<void> {
@@ -122,13 +122,13 @@ class Scenario {
           new Break(),
           new Response(Dictionary["REPEAT_AFTER_ME"]),
           new Break(1.0),
-          new Quote(questionText, this.readingSpeedRate)
+          new Quote(questionText, this.speakingSpeedRate)
         ],
         EndStatus.WaitingAnswer
       );
     } else {
       this.addSpeech(
-        [new Break(1.0), new Quote(questionText, this.readingSpeedRate)],
+        [new Break(1.0), new Quote(questionText, this.speakingSpeedRate)],
         EndStatus.WaitingAnswer
       );
     }
@@ -182,8 +182,8 @@ class Scenario {
   }
 
   private speakSlowly() {
-    if (this.readingSpeedRate > 70) {
-      this.readingSpeedRate -= 15;
+    if (this.speakingSpeedRate > 70) {
+      this.speakingSpeedRate -= 15;
     }
   }
 
@@ -199,7 +199,7 @@ class Scenario {
     this.articleId = article.guid;
     this.retryCount = 0;
     this.questionText = article.questionText;
-    this.readingSpeedRate = DEFAULT_READING_SPEED_RATE;
+    this.speakingSpeedRate = DEFAULT_SPEAKING_SPEED_RATE;
     this.incrementPracticeCount();
   }
 
@@ -207,7 +207,7 @@ class Scenario {
     this.articleId = "";
     this.retryCount = 0;
     this.questionText = "";
-    this.readingSpeedRate = DEFAULT_READING_SPEED_RATE;
+    this.speakingSpeedRate = DEFAULT_SPEAKING_SPEED_RATE;
   }
 
   private addSpeech(
