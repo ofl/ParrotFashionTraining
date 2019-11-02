@@ -89,11 +89,11 @@ class Credit implements SpeechComponent {
 class Quote implements SpeechComponent {
   constructor(
     public text: string = "",
-    public readingSpeedRate: number = 100
+    public speakingSpeedRate: number = 100
   ) {}
 
   toSsml(): string {
-    return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeedRate}%`);
+    return SSML.encloseQuote(`"${this.text}"`, `${this.speakingSpeedRate}%`);
   }
 
   toText(): string {

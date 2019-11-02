@@ -16,13 +16,13 @@ class ArticleNotFound extends ApplicationError {
   public name = "ArticleNotFound";
 }
 
-class QuestionTextNotFound extends ApplicationError {
-  public name = "QuestionTextNotFound";
+class PracticeNotFound extends ApplicationError {
+  public name = "PracticeNotFound";
 }
 
 export {
   ApplicationError,
   ArticleNotFound,
   AvailableArticleNotExist,
-  QuestionTextNotFound
+  PracticeNotFound
 };

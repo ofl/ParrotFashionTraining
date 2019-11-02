@@ -30,7 +30,7 @@ export default class Article {
     dictionaries: { [key: string]: string }[]
   ): Article[] {
     const articles: Article[] = dictionaries.map(dict => {
-      return this.createFromDictionary(dict);
+      return this.createByDictionary(dict);
     });
 
     return articles
@@ -38,7 +38,7 @@ export default class Article {
       .filter(article => !article.hasTooManyWordInSentence());
   }
 
-  static createFromDocumentData(data: DocumentData): Article {
+  static createByDocumentData(data: DocumentData): Article {
     return new Article(
       data.guid,
       data.title,
@@ -49,7 +49,7 @@ export default class Article {
     );
   }
 
-  static createFromDictionary(dict: { [key: string]: string }): Article {
+  static createByDictionary(dict: { [key: string]: string }): Article {
     const sentences: string[] = TextSplitter.execute(dict.contentSnippet);
     const unixTimeOfPublishedAt = moment(dict.isoDate).unix();
 

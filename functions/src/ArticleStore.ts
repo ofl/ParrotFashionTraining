@@ -97,14 +97,14 @@ export default class ArticleStore {
       throw new ArticleNotFound("Article not found");
     }
 
-    return Article.createFromDocumentData(data);
+    return Article.createByDocumentData(data);
   }
 
   private static async list(
     snapshot: FirebaseFirestore.QuerySnapshot
   ): Promise<Article[]> {
     return snapshot.docs.map(doc => {
-      return Article.createFromDocumentData(doc.data());
+      return Article.createByDocumentData(doc.data());
     });
   }
 }
