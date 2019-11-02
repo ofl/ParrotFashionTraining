@@ -1,5 +1,6 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
 import { Scenario } from "./Scenario";
+import Practice from "./Practice";
 
 const DEFAULT_SPEAKING_SPEED_RATE: number = 100; // (%)
 
@@ -13,13 +14,14 @@ export default class ScenarioStore {
       speakingSpeedRate: number;
     };
 
-    return new Scenario(
+    const practice = new Practice(
       data.articleId || "",
       data.questionText || "",
-      data.practiceCount || 0,
       data.retryCount || 0,
       data.speakingSpeedRate || DEFAULT_SPEAKING_SPEED_RATE
     );
+
+    return new Scenario(data.practiceCount || 0, practice);
   }
 
   static save(
@@ -27,11 +29,11 @@ export default class ScenarioStore {
     scenario: Scenario
   ) {
     conv.data = {
-      articleId: scenario.articleId,
-      questionText: scenario.questionText,
+      articleId: scenario.practice.articleId,
+      questionText: scenario.practice.questionText,
       practiceCount: scenario.practiceCount,
-      retryCount: scenario.retryCount,
-      speakingSpeedRate: scenario.speakingSpeedRate
+      retryCount: scenario.practice.retryCount,
+      speakingSpeedRate: scenario.practice.speakingSpeedRate
     };
   }
 
