@@ -1,7 +1,7 @@
 import Article from "./Article";
 import ArticleStore from "./ArticleStore";
 import AnswerResult from "./AnswerResult";
-import { ArticleNotFound, QuestionTextNotFound } from "./errors";
+import { PracticeNotFound } from "./errors";
 import { Speech, EndStatus } from "./Speech";
 import {
   SpeechComponent,
@@ -88,8 +88,8 @@ class Scenario {
   async sayAgain(): Promise<void> {
     this.speakSlowly();
 
-    if (this.questionText === "") {
-      throw new QuestionTextNotFound("NOT_FOUND");
+    if (this.practice.questionText === "") {
+      throw new PracticeNotFound("NOT_FOUND");
     }
 
     this.addSpeech([new RandomResponse("ACCEPTED", 3)]);
