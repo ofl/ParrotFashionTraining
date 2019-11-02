@@ -54,33 +54,27 @@ const PREPOSITIONS: string[] = [
 ];
 
 export default class TextSplitter {
-  static run(text: string): string[] {
-    let sentences = this.textToSentences(text);
-    sentences = this.splitSentencesWithPunctuations(sentences, PUNCTUATIONS);
-    sentences = this.splitSentencesWithSeparatorWords(
-      sentences,
-      INTERROGATIVES
-    );
-    sentences = this.splitSentencesWithSeparatorWords(sentences, CONJUNCTIONS);
-    sentences = this.splitSentencesWithSeparatorWords(sentences, PREPOSITIONS);
+  static execute(text: string): string[] {
+    let array = this.textToArray(text);
+    array = this.splitTextInArrayWithPunctuations(array, PUNCTUATIONS);
+    array = this.splitTextInArrayWithArrayOfSeparators(array, INTERROGATIVES);
+    array = this.splitTextInArrayWithArrayOfSeparators(array, CONJUNCTIONS);
+    array = this.splitTextInArrayWithArrayOfSeparators(array, PREPOSITIONS);
 
-    return sentences;
+    return array;
   }
 
-  private static splitSentencesWithPunctuations(
-    sentences: string[],
+  private static splitTextInArrayWithPunctuations(
+    array: string[],
     punctuations: string[]
   ): string[] {
     const result: string[] = [];
 
-    sentences.forEach(sentence => {
-      const matchedPunctuations = this.matchedPunctuations(
-        sentence,
-        punctuations
-      );
-      this.splitSentenceWithPunctuations(sentence, matchedPunctuations).forEach(
-        splittedSentence => {
-          result.push(splittedSentence);
+    array.forEach(text => {
+      const matchedPunctuations = this.matchedPunctuations(text, punctuations);
+      this.splitTextWithPunctuations(text, matchedPunctuations).forEach(
+        splittedText => {
+          result.push(splittedText);
         }
       );
     });
@@ -88,22 +82,22 @@ export default class TextSplitter {
     return this.rejoinText(result);
   }
 
-  private static splitSentencesWithSeparatorWords(
-    sentences: string[],
-    separatorWords: string[]
+  private static splitTextInArrayWithArrayOfSeparators(
+    array: string[],
+    arrayOfSeparators: string[]
   ): string[] {
     const result: string[] = [];
 
-    sentences.forEach(sentence => {
-      const matchedSeparatorWords = this.matchedSeparatorWords(
-        sentence,
-        separatorWords
+    array.forEach(text => {
+      const matchedArrayOfSeparators = this.matchedArrayOfSeparators(
+        text,
+        arrayOfSeparators
       );
-      this.splitSentenceWithSeparatorWords(
-        sentence,
-        matchedSeparatorWords
-      ).forEach(splittedSentence => {
-        result.push(splittedSentence);
+      this.splitTextWithArrayOfSeparators(
+        text,
+        matchedArrayOfSeparators
+      ).forEach(splittedText => {
+        result.push(splittedText);
       });
     });
 
@@ -144,57 +138,57 @@ export default class TextSplitter {
     return result;
   }
 
-  private static splitSentenceWithPunctuations(
-    sentence: string,
+  private static splitTextWithPunctuations(
+    text: string,
     punctuations: string[],
     depth: number = 0
   ): string[] {
     const punctuation = punctuations[depth];
 
-    if (punctuation == null || this.isShortEnough(sentence)) {
-      return [sentence];
+    if (punctuation == null || this.isShortEnough(text)) {
+      return [text];
     }
-    const array = this.splitTextWithPunctuation(sentence, punctuation);
+    const array = this.splitTextWithPunctuation(text, punctuation);
 
     const result: string[] = [];
-    array.forEach(splittedSentence => {
-      this.splitSentenceWithPunctuations(
-        splittedSentence,
+    array.forEach(splittedText => {
+      this.splitTextWithPunctuations(
+        splittedText,
         punctuations,
         depth + 1
-      ).forEach(splittedSplittedSentence => {
-        result.push(splittedSplittedSentence);
+      ).forEach(splittedSplittedText => {
+        result.push(splittedSplittedText);
       });
     });
     return result;
   }
 
-  private static splitSentenceWithSeparatorWords(
-    sentence: string,
-    separatorWords: string[],
+  private static splitTextWithArrayOfSeparators(
+    text: string,
+    arrayOfSeparators: string[],
     depth: number = 0
   ): string[] {
-    const separatorWord = separatorWords[depth];
+    const separator = arrayOfSeparators[depth];
 
-    if (separatorWord == null || this.isShortEnough(sentence)) {
-      return [sentence];
+    if (separator == null || this.isShortEnough(text)) {
+      return [text];
     }
-    const array = this.splitTextWithSeparatorWord(sentence, separatorWord);
+    const array = this.splitTextWithSeparator(text, separator);
 
     const result: string[] = [];
-    array.forEach(splittedSentence => {
-      this.splitSentenceWithSeparatorWords(
-        splittedSentence,
-        separatorWords,
+    array.forEach(splittedText => {
+      this.splitTextWithArrayOfSeparators(
+        splittedText,
+        arrayOfSeparators,
         depth + 1
-      ).forEach(splittedSplittedSentence => {
-        result.push(splittedSplittedSentence);
+      ).forEach(splittedSplittedText => {
+        result.push(splittedSplittedText);
       });
     });
     return result;
   }
 
-  private static textToSentences(text: string): string[] {
+  private static textToArray(text: string): string[] {
     const tokenizer = new Tokenizer("Chuck");
     tokenizer.setEntry(text);
 
@@ -231,13 +225,13 @@ export default class TextSplitter {
     });
   }
 
-  private static splitTextWithSeparatorWord(
+  private static splitTextWithSeparator(
     text: string,
-    separatorWord: string
+    separator: string
   ): string[] {
-    const regex = new RegExp(this.separatorWordRegexStr(separatorWord));
+    const regex = new RegExp(this.separatorRegexStr(separator));
     return text.split(regex).map((splittedText, index) => {
-      return index === 0 ? splittedText : ` ${separatorWord} ${splittedText}`;
+      return index === 0 ? splittedText : ` ${separator} ${splittedText}`;
     });
   }
 
@@ -254,13 +248,13 @@ export default class TextSplitter {
     return this.matched(text, regexStr);
   }
 
-  private static matchedSeparatorWords(
+  private static matchedArrayOfSeparators(
     text: string,
-    separatorWords: string[]
+    arrayOfSeparators: string[]
   ): string[] {
-    const regexStr = separatorWords
-      .map(separatorWord => {
-        return this.separatorWordRegexStr(separatorWord);
+    const regexStr = arrayOfSeparators
+      .map(separator => {
+        return this.separatorRegexStr(separator);
       })
       .join("|");
 
@@ -276,8 +270,8 @@ export default class TextSplitter {
         });
   }
 
-  private static separatorWordRegexStr(separatorWord: string): string {
-    return `(?=\\b)(?:\\s)${separatorWord}\\s(?=\\b)`;
+  private static separatorRegexStr(separator: string): string {
+    return `(?=\\b)(?:\\s)${separator}\\s(?=\\b)`;
   }
 
   private static punctuationRegexStr(punctuation: string): string {

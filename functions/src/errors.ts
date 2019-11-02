@@ -8,10 +8,6 @@ class ApplicationError implements Error {
   }
 }
 
-class UserDataLoadError extends ApplicationError {
-  public name = "UserDataLoadError";
-}
-
 class AvailableArticleNotExist extends ApplicationError {
   public name = "AvailableArticleNotExist";
 }
@@ -26,7 +22,6 @@ class QuestionTextNotFound extends ApplicationError {
 
 export {
   ApplicationError,
-  UserDataLoadError,
   ArticleNotFound,
   AvailableArticleNotExist,
   QuestionTextNotFound

@@ -23,7 +23,7 @@ const Dictionary: { [key: string]: string } = {
   REGRETTABLE_2: "Almost had it!",
   POOR_1: "Don't mind!",
   POOR_2: "Let's do your best next time!",
-  SKIP_SENTENCE: "Let's start next sentence.",
+  SKIP_QUESTION_TEXT: "Let's start next sentence.",
   SKIP_ARTICLE: "Let's start next article.",
   INTRODUCTION: "The title of the next article is",
   REPEAT_AFTER_ME: "Repeat after me.",
@@ -45,7 +45,7 @@ class Response implements SpeechComponent {
     if (this.text === "") {
       return "";
     }
-    return SSML.encloseMessage(this.text);
+    return SSML.encloseContent(this.text);
   }
 
   toText(): string {
@@ -60,7 +60,7 @@ class RandomResponse implements SpeechComponent {
     if (this.keyword === "") {
       return "";
     }
-    return SSML.encloseMessage(
+    return SSML.encloseContent(
       Dictionary[Utils.randomMessage(this.keyword, this.length)]
     );
   }
@@ -77,7 +77,7 @@ class Credit implements SpeechComponent {
   constructor(public publisher: string, public unixtime: number) {}
 
   toSsml(): string {
-    return SSML.encloseMessage(this.toText());
+    return SSML.encloseContent(this.toText());
   }
 
   toText(): string {
@@ -87,10 +87,13 @@ class Credit implements SpeechComponent {
 }
 
 class Quote implements SpeechComponent {
-  constructor(public text: string = "", public readingSpeed: number = 100) {}
+  constructor(
+    public text: string = "",
+    public readingSpeedRate: number = 100
+  ) {}
 
   toSsml(): string {
-    return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeed}%`);
+    return SSML.encloseQuote(`"${this.text}"`, `${this.readingSpeedRate}%`);
   }
 
   toText(): string {

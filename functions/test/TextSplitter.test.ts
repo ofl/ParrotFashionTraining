@@ -3,12 +3,12 @@ import { assert } from "chai";
 
 import TextSplitter from "../src/TextSplitter";
 
-describe(".run", () => {
+describe(".execute", () => {
   it("文章が適切な位置で分割されること1", () => {
     const testText =
       "Democrats and recommend Republicans at both the federal and state levels are uniting to investigate the power of Big Tech and, potentially, to rein in the dominant companies.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "Democrats and recommend Republicans at both the federal",
       " and state levels are uniting",
       " to investigate the power of Big Tech and, potentially, ",
@@ -20,7 +20,7 @@ describe(".run", () => {
     const testText =
       "Even before women had the right to vote, Blaché, in her actions and in her films, expressed female drives, desires and self-determination.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "Even before women had the right to vote, ",
       "Blaché, in her actions and in her films, ",
       "expressed female drives, ",
@@ -32,7 +32,7 @@ describe(".run", () => {
     const testText =
       "Hackers have been targeting regular people and celebrities with the attack. Last week, it was used to hijack the Twitter account of Twitter’s C.E.O.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "Hackers have been targeting regular people",
       " and celebrities with the attack.Last week, ",
       "it was used",
@@ -44,7 +44,7 @@ describe(".run", () => {
     const testText =
       "As Bangladesh vowed to cut off mobile phone access in Rohingya camps, refugees who fled terror in Myanmar despaired over their future.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "As Bangladesh vowed",
       " to cut off mobile phone access in Rohingya camps, refugees",
       " who fled terror in Myanmar despaired over their future."
@@ -55,7 +55,7 @@ describe(".run", () => {
     const testText =
       "Health officials around the country are still investigating numerous possible causes and have tested only some of the devices used by ill patients.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "Health officials around the country are still investigating numerous possible causes",
       " and have tested only some of the devices used by ill patients."
     ]);
@@ -65,7 +65,7 @@ describe(".run", () => {
     const testText =
       "A surge of severe lung ailments has baffled doctors and public health experts.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "A surge of severe lung ailments has baffled doctors",
       " and public health experts."
     ]);
@@ -75,7 +75,7 @@ describe(".run", () => {
     const testText =
       "To expand the pool of workers, companies are recruiting stay-at-home parents, retirees and people with disabilities.";
 
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "To expand the pool of workers, ",
       "companies are recruiting stay-at-home parents, ",
       "retirees and people with disabilities."
@@ -84,7 +84,7 @@ describe(".run", () => {
 
   it("文章が適切な位置で分割されること8", () => {
     const testText = "A New TV Show from The New York Times on FX and Hulu";
-    assert.sameMembers(TextSplitter.run(testText), [
+    assert.sameMembers(TextSplitter.execute(testText), [
       "A New TV Show",
       " from The New York Times on FX and Hulu"
     ]);

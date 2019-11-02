@@ -13,9 +13,9 @@ import {
   Break
 } from "./SpeechComponent";
 
-const DEFAULT_READING_SPEED: number = 100; // (%)
+const DEFAULT_READING_SPEED_RATE: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
-const CONFIRM_CONTINUE_INTERVAL = 10;
+const CONFIRMATION_INTERVAL = 10;
 
 class Scenario {
   speeches: Speech[] = [];
@@ -23,14 +23,10 @@ class Scenario {
   constructor(
     public articleId: string = "",
     public questionText: string = "",
+    public practiceCount: number = 0,
     public retryCount: number = 0,
-    public readingSpeed: number = Scenario.defaultReadingSpeed,
-    public practiceCount: number = 0
+    public readingSpeedRate: number = DEFAULT_READING_SPEED_RATE
   ) {}
-
-  static get defaultReadingSpeed(): number {
-    return DEFAULT_READING_SPEED;
-  }
 
   async welcome(): Promise<void> {
     this.reset();
@@ -40,7 +36,7 @@ class Scenario {
       new RandomResponse("YELL", 3)
     ]);
 
-    await this.readNewSentence();
+    await this.readNewQuestionText();
   }
 
   async userAnswered(answer: string): Promise<void> {
@@ -62,12 +58,12 @@ class Scenario {
     } else {
       this.addSpeech([this.getResultResponse(answerResult)]);
 
-      if (this.isPracticeConfirmationPeriod) {
+      if (this.isConfirmationPeriod) {
         this.addConfirmation();
         return;
       }
 
-      await this.readNewSentence();
+      await this.readNewQuestionText();
     }
   }
 
@@ -77,16 +73,16 @@ class Scenario {
       new Response(Dictionary["SKIP_ARTICLE"])
     ]);
 
-    await this.readNewSentence();
+    await this.readNewQuestionText();
   }
 
-  async skipSentence(): Promise<void> {
+  async skipQuestionText(): Promise<void> {
     this.addSpeech([
       new RandomResponse("ACCEPTED", 3),
-      new Response(Dictionary["SKIP_SENTENCE"])
+      new Response(Dictionary["SKIP_QUESTION_TEXT"])
     ]);
 
-    await this.readNewSentence();
+    await this.readNewQuestionText();
   }
 
   async sayAgain(): Promise<void> {
@@ -104,8 +100,8 @@ class Scenario {
     this.addSpeech([new RandomResponse("BYE", 3)], EndStatus.Close);
   }
 
-  private async readNewSentence(): Promise<void> {
-    const article = await this.findArticleForNextSentence();
+  private async readNewQuestionText(): Promise<void> {
+    const article = await this.findArticleForNextQuestionText();
     this.setNewPractice(article);
 
     if (this.questionText === "") {
@@ -126,13 +122,13 @@ class Scenario {
           new Break(),
           new Response(Dictionary["REPEAT_AFTER_ME"]),
           new Break(1.0),
-          new Quote(questionText, this.readingSpeed)
+          new Quote(questionText, this.readingSpeedRate)
         ],
         EndStatus.WaitingAnswer
       );
     } else {
       this.addSpeech(
-        [new Break(1.0), new Quote(questionText, this.readingSpeed)],
+        [new Break(1.0), new Quote(questionText, this.readingSpeedRate)],
         EndStatus.WaitingAnswer
       );
     }
@@ -150,14 +146,14 @@ class Scenario {
     );
   }
 
-  private async findArticleForNextSentence(): Promise<Article> {
+  private async findArticleForNextQuestionText(): Promise<Article> {
     try {
       let article: Article;
 
       if (this.articleId === "") {
-        article = await ArticleStore.findLatestBefore();
+        article = await ArticleStore.findOnePublishedBefore();
       } else {
-        article = await ArticleStore.getIncludingNextQuestionText(
+        article = await ArticleStore.findOneIncludingNextQuestionText(
           this.articleId,
           this.questionText
         );
@@ -186,8 +182,8 @@ class Scenario {
   }
 
   private speakSlowly() {
-    if (this.readingSpeed > 70) {
-      this.readingSpeed -= 15;
+    if (this.readingSpeedRate > 70) {
+      this.readingSpeedRate -= 15;
     }
   }
 
@@ -203,7 +199,7 @@ class Scenario {
     this.articleId = article.guid;
     this.retryCount = 0;
     this.questionText = article.questionText;
-    this.readingSpeed = Scenario.defaultReadingSpeed;
+    this.readingSpeedRate = DEFAULT_READING_SPEED_RATE;
     this.incrementPracticeCount();
   }
 
@@ -211,7 +207,7 @@ class Scenario {
     this.articleId = "";
     this.retryCount = 0;
     this.questionText = "";
-    this.readingSpeed = Scenario.defaultReadingSpeed;
+    this.readingSpeedRate = DEFAULT_READING_SPEED_RATE;
   }
 
   private addSpeech(
@@ -221,8 +217,8 @@ class Scenario {
     this.speeches.push(new Speech(components, endStatus));
   }
 
-  private get isPracticeConfirmationPeriod(): boolean {
-    return this.practiceCount % CONFIRM_CONTINUE_INTERVAL === 0;
+  private get isConfirmationPeriod(): boolean {
+    return this.practiceCount % CONFIRMATION_INTERVAL === 0;
   }
 
   private mustRetry(retryCount: number, result: AnswerResult): boolean {

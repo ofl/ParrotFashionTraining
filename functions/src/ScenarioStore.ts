@@ -1,22 +1,24 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
 import { Scenario } from "./Scenario";
 
+const DEFAULT_READING_SPEED_RATE: number = 100; // (%)
+
 export default class ScenarioStore {
   static load(conv: DialogflowConversation<unknown, unknown, Contexts>) {
     const data = conv.data as {
       articleId: string;
       questionText: string;
-      retryCount: number;
-      readingSpeed: number;
       practiceCount: number;
+      retryCount: number;
+      readingSpeedRate: number;
     };
 
     return new Scenario(
       data.articleId || "",
       data.questionText || "",
+      data.practiceCount || 0,
       data.retryCount || 0,
-      data.readingSpeed || Scenario.defaultReadingSpeed,
-      data.practiceCount || 0
+      data.readingSpeedRate || DEFAULT_READING_SPEED_RATE
     );
   }
 
@@ -27,9 +29,9 @@ export default class ScenarioStore {
     conv.data = {
       articleId: scenario.articleId,
       questionText: scenario.questionText,
+      practiceCount: scenario.practiceCount,
       retryCount: scenario.retryCount,
-      readingSpeed: scenario.readingSpeed,
-      practiceCount: scenario.practiceCount
+      readingSpeedRate: scenario.readingSpeedRate
     };
   }
 
@@ -37,9 +39,9 @@ export default class ScenarioStore {
     conv.data = {
       articleId: "",
       questionText: "",
+      practiceCount: 0,
       retryCount: 0,
-      readingSpeed: Scenario.defaultReadingSpeed,
-      practiceCount: 0
+      readingSpeedRate: DEFAULT_READING_SPEED_RATE
     };
   }
 }

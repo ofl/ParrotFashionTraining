@@ -11,14 +11,14 @@ const firestore = firebase.firestore();
 const ARTICLE_COLLECTION_PATH = "articles";
 
 export default class ArticleStore {
-  static async findLatestBefore(
+  static async findOnePublishedBefore(
     unixtime: number = moment().unix()
   ): Promise<Article> {
-    const query = this.getQueryPublishedBefore(unixtime);
+    const query = this.queryPublishedBefore(unixtime);
     return await this.findOne(query);
   }
 
-  static async getIncludingNextQuestionText(
+  static async findOneIncludingNextQuestionText(
     articleId: string,
     currentQuestionText: string
   ): Promise<Article> {
@@ -31,10 +31,10 @@ export default class ArticleStore {
       return currentArticle;
     }
 
-    return await this.findLatestBefore(currentArticle.unixtime);
+    return await this.findOnePublishedBefore(currentArticle.unixtime);
   }
 
-  static getQueryPublishedBefore(unixtime: number): Query {
+  static queryPublishedBefore(unixtime: number): Query {
     return firestore
       .collection(ARTICLE_COLLECTION_PATH)
       .where("unixtime", "<", unixtime)
@@ -75,6 +75,17 @@ export default class ArticleStore {
     await batch.commit();
   }
 
+  private static async findOne(query: Query): Promise<Article> {
+    const snapshot = await query.limit(1).get();
+    const articles: Article[] = await this.list(snapshot);
+
+    if (articles.length === 0) {
+      throw new AvailableArticleNotExist("NOT_EXIST");
+    }
+
+    return articles[0];
+  }
+
   private static async get(articleId: string): Promise<Article> {
     const doc = await firestore
       .collection(ARTICLE_COLLECTION_PATH)
@@ -87,17 +98,6 @@ export default class ArticleStore {
     }
 
     return Article.createFromDocumentData(data);
-  }
-
-  private static async findOne(query: Query): Promise<Article> {
-    const snapshot = await query.limit(1).get();
-    const articles: Article[] = await this.list(snapshot);
-
-    if (articles.length === 0) {
-      throw new AvailableArticleNotExist("NOT_EXIST");
-    }
-
-    return articles[0];
   }
 
   private static async list(
