@@ -29,8 +29,8 @@ export default class Article {
   static bulkCreateFromDictionaries(
     dictionaries: { [key: string]: string }[]
   ): Article[] {
-    const articles: Article[] = dictionaries.map(dictionary => {
-      return this.createFromDictionary(dictionary);
+    const articles: Article[] = dictionaries.map(dict => {
+      return this.createFromDictionary(dict);
     });
 
     return articles
@@ -49,16 +49,16 @@ export default class Article {
     );
   }
 
-  static createFromDictionary(dictionary: { [key: string]: string }): Article {
-    const sentences: string[] = TextSplitter.run(dictionary.contentSnippet);
-    const unixTimeOfPublishedAt = moment(dictionary.isoDate).unix();
+  static createFromDictionary(dict: { [key: string]: string }): Article {
+    const sentences: string[] = TextSplitter.execute(dict.contentSnippet);
+    const unixTimeOfPublishedAt = moment(dict.isoDate).unix();
 
     return new Article(
-      dictionary.guid,
-      dictionary.title,
-      dictionary.contentSnippet,
+      dict.guid,
+      dict.title,
+      dict.contentSnippet,
       sentences,
-      dictionary.creator,
+      dict.creator,
       unixTimeOfPublishedAt
     );
   }

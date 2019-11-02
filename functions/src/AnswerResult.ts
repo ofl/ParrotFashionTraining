@@ -11,24 +11,34 @@ export default class AnswerResult {
     return new AnswerResult(this.textSimilarity(questionText, answerText));
   }
 
+  // privateだがテストのため宣言していない。
   static textSimilarity(original: string, target: string): number {
-    const originalText = this.removePunctuations(original);
-    const targetText = this.removePunctuations(target);
-
-    const result: number = levenshtein(originalText, targetText);
+    const originalText = this.normalize(original);
+    const targetText = this.normalize(target);
     const originalTextLength = originalText.length;
-    const difference: number = Math.max(result - originalTextLength / 8, 0);
-    const rate = ((originalTextLength - difference) / originalTextLength) * 100;
 
-    return Math.floor(rate);
+    // 出題文と回答の文字単位の相違数
+    const difference: number = levenshtein(originalText, targetText);
+
+    // 出題に対する正解率
+    return Math.floor(
+      ((originalTextLength - difference) / originalTextLength) * 100
+    );
   }
 
-  private static removePunctuations(string: string): string {
-    const matchedArray = string.match(/\w+/g);
-    if (matchedArray === null) {
+  // テキストを比較しやすいように記号を取り除いてすべて小文字化する
+  // privateだがテストのため宣言していない。
+  static normalize(string: string): string {
+    const matched: string[] | null = string.match(/\w+/g);
+    if (matched === null) {
       return "";
     }
-    return matchedArray.join(" ");
+
+    return matched
+      .map(word => {
+        return word.toLowerCase();
+      })
+      .join(" ");
   }
 
   get isPoor(): boolean {

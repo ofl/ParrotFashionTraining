@@ -3,7 +3,7 @@ export default class SSML {
     return `<speak><p>${text}</p></speak>`;
   }
 
-  static encloseMessage(message: string): string {
+  static encloseContent(message: string): string {
     return `<s>${message}</s>`;
   }
 

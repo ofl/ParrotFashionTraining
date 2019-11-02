@@ -67,7 +67,7 @@ app.intent("Skip Sentence Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      return scenario.skipSentence();
+      return scenario.skipQuestionText();
     }
   );
 });
