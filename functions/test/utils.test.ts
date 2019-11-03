@@ -3,7 +3,7 @@ import { assert } from "chai";
 
 import Utils from "../src/Utils";
 
-describe(".findValueOfKeyInText", () => {
+describe(".findKeyInText", () => {
   const NEWS_SOURCES: { [key: string]: string } = {
     "cnn.com": "CNN",
     "nytimes.com": "New York Times",
@@ -14,17 +14,14 @@ describe(".findValueOfKeyInText", () => {
     const guid =
       "https://www.nytimes.com/2019/09/09/health/vaping-juul-e-cigarettes-fda.html";
 
-    assert.equal(
-      Utils.findValueOfKeyInText(guid, NEWS_SOURCES),
-      "New York Times"
-    );
+    assert.equal(Utils.findKeyInText(guid, NEWS_SOURCES), "nytimes.com");
   });
 
   it("文章にKeyが含まれていない場合は対応するnullが返ること", () => {
     const guid =
       "https://www.bbc.com/2019/09/09/health/vaping-juul-e-cigarettes-fda.html";
 
-    assert.isNull(Utils.findValueOfKeyInText(guid, NEWS_SOURCES));
+    assert.isUndefined(Utils.findKeyInText(guid, NEWS_SOURCES));
   });
 });
 
@@ -42,11 +39,11 @@ describe(".selectRandomly", () => {
   });
 });
 
-describe(".maxWordCountInSentences", () => {
+describe(".maxWordCountOfTextInArray", () => {
   it("テキストの配列を渡すと最も大きい単語数が返ること", () => {
     const array: string[] = ["foo bar baz", "bar foo bar baz", "baz bsr"];
 
-    assert.equal(Utils.maxWordCountInSentences(array), 4);
+    assert.equal(Utils.maxWordCountOfTextInArray(array), 4);
   });
 });
 
