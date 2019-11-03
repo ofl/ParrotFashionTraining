@@ -1,5 +1,4 @@
 import { DialogflowConversation, Contexts } from "actions-on-google";
-import { PracticeNotFound } from "./errors";
 import { Scenario } from "./Scenario";
 import Practice from "./Practice";
 
@@ -31,13 +30,14 @@ export default class ScenarioStore {
     scenario: Scenario
   ) {
     if (typeof scenario.practice === "undefined") {
-      throw new PracticeNotFound("NOT_FOUND");
+      conv.data = { practiceCount: scenario.practiceCount };
+      return;
     }
 
     conv.data = {
+      practiceCount: scenario.practiceCount,
       articleId: scenario.practice.articleId,
       questionText: scenario.practice.questionText,
-      practiceCount: scenario.practiceCount,
       retryCount: scenario.practice.retryCount,
       speakingSpeedRate: scenario.practice.speakingSpeedRate
     };

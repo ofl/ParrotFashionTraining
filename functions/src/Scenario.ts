@@ -42,11 +42,11 @@ class Scenario {
 
     if (this.practice.canRetry && this.practice.mustRetry) {
       if (!answerResult.isPoor) {
-        this.addSpeech([this.getResultResponse(answerResult)]);
+        this.addResultResponse(answerResult);
       }
       this.addQuestionText(this.practice.questionText);
     } else {
-      this.addSpeech([this.getResultResponse(answerResult)]);
+      this.addResultResponse(answerResult);
 
       if (this.isConfirmationPeriod) {
         this.addConfirmation();
@@ -139,16 +139,19 @@ class Scenario {
     );
   }
 
-  private getResultResponse(result: AnswerResult): RandomResponse {
-    if (result.isExcellent) {
-      return new RandomResponse("EXCELLENT", 2);
-    } else if (result.isGood) {
-      return new RandomResponse("GOOD", 3);
-    } else if (result.isRegrettable) {
-      return new RandomResponse("REGRETTABLE", 2);
-    } else {
-      return new RandomResponse("POOR", 2);
-    }
+  private addResultResponse(result: AnswerResult) {
+    const response: RandomResponse = (() => {
+      if (result.isExcellent) {
+        return new RandomResponse("EXCELLENT", 2);
+      } else if (result.isGood) {
+        return new RandomResponse("GOOD", 3);
+      } else if (result.isRegrettable) {
+        return new RandomResponse("REGRETTABLE", 2);
+      } else {
+        return new RandomResponse("POOR", 2);
+      }
+    })();
+    this.addSpeech([response]);
   }
 
   private incrementPracticeCount() {
