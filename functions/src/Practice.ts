@@ -1,6 +1,5 @@
 import AnswerResult from "./AnswerResult";
 import Article from "./Article";
-import ArticleStore from "./ArticleStore";
 
 const DEFAULT_SPEAKING_SPEED_RATE: number = 100; // (%)
 const MAX_RETRY_COUNT = 3;
@@ -16,15 +15,10 @@ export default class Practice {
   ) {}
 
   static createByArticle(article: Article): Practice {
-    return new Practice(
-      article.guid,
-      article.questionText,
-      0,
-      DEFAULT_SPEAKING_SPEED_RATE
-    );
+    return new Practice(article.guid, article.questionText);
   }
 
-  judgeAnswer(answer: string): AnswerResult {
+  getResult(answer: string): AnswerResult {
     this.result = AnswerResult.get(this.questionText, answer);
     if (this.mustRetry) {
       this.incrementRetryCount();
@@ -52,25 +46,6 @@ export default class Practice {
   speakSlowly() {
     if (this.speakingSpeedRate > 70) {
       this.speakingSpeedRate -= 15;
-    }
-  }
-
-  async findArticleForNextPractice(): Promise<Article> {
-    try {
-      let article: Article;
-
-      if (this.articleId === "") {
-        article = await ArticleStore.findOnePublishedBefore();
-      } else {
-        article = await ArticleStore.findOneIncludingNextQuestionText(
-          this.articleId,
-          this.questionText
-        );
-      }
-
-      return article;
-    } catch (error) {
-      throw error;
     }
   }
 }

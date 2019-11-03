@@ -119,12 +119,12 @@ app.intent("Stop Practice Intent", async conv => {
 
 const actScenario = async (
   conv: DialogflowConversation<unknown, unknown, Contexts>,
-  callback: (scenario: Scenario) => Promise<void>
+  func: (scenario: Scenario) => Promise<void>
 ) => {
   try {
     const scenario = ScenarioStore.load(conv);
 
-    await callback(scenario);
+    await func(scenario);
 
     ScenarioStore.save(conv, scenario);
 

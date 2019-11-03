@@ -6,18 +6,15 @@ export default class Utils {
     return md5.update(str, "binary").digest("hex");
   }
 
-  static findValueOfKeyInText(
+  static findKeyInText(
     text: string,
     dict: { [key: string]: string }
-  ): string | null {
+  ): string | undefined {
     const result: string | undefined = Object.keys(dict).find(domain => {
       return text.indexOf(domain) >= 0;
     });
-    if (typeof result === "undefined") {
-      return null;
-    }
 
-    return dict[result];
+    return result;
   }
 
   static selectRandomly<T>(array: T[]): T {
@@ -32,15 +29,12 @@ export default class Utils {
     return Math.floor(Math.random() * length) + 1;
   }
 
-  static maxWordCountInSentences(sentences: string[]): number {
+  static maxWordCountOfTextInArray(array: string[]): number {
     let maxWordCount = 0;
-
-    sentences.forEach(sentence => {
-      const wordCount = this.countWord(sentence);
-      if (maxWordCount < wordCount) {
-        maxWordCount = wordCount;
-      }
+    array.forEach(text => {
+      maxWordCount = Math.max(maxWordCount, this.countWord(text));
     });
+
     return maxWordCount;
   }
 

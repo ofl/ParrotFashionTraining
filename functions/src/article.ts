@@ -91,7 +91,12 @@ export default class Article {
   }
 
   get newsSource(): string | null {
-    return Utils.findValueOfKeyInText(this.guid, NEWS_SOURCES);
+    const key = Utils.findKeyInText(this.guid, NEWS_SOURCES);
+    if (typeof key === "undefined") {
+      return null;
+    }
+
+    return NEWS_SOURCES[key];
   }
 
   get hasNextQuestionText(): boolean {
@@ -103,7 +108,7 @@ export default class Article {
   }
 
   hasTooManyWordInSentence(max: number = MAX_WORD_COUNT_IN_SENTENCE): boolean {
-    return Utils.maxWordCountInSentences(this.sentences) > max;
+    return Utils.maxWordCountOfTextInArray(this.sentences) > max;
   }
 
   isTooOld(days: number = DAYS_BEFORE): boolean {
