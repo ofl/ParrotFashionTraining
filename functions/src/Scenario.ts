@@ -1,7 +1,8 @@
-import Article from "./Article";
-import Practice from "./Practice";
 import AnswerResult from "./AnswerResult";
+import Article from "./Article";
+import ArticleStore from "./ArticleStore";
 import { PracticeNotFound } from "./errors";
+import Practice from "./Practice";
 import { Speech, EndStatus } from "./Speech";
 import {
   SpeechComponent,
@@ -17,8 +18,11 @@ const CONFIRMATION_INTERVAL = 10;
 
 class Scenario {
   speeches: Speech[] = [];
+  public practice: Practice | undefined;
 
-  constructor(public practiceCount: number = 0, public practice: Practice) {}
+  constructor(public practiceCount: number = 0, practice?: Practice) {
+    this.practice = practice;
+  }
 
   async welcome(): Promise<void> {
     this.addSpeech([
@@ -30,11 +34,11 @@ class Scenario {
   }
 
   async userAnswered(answer: string): Promise<void> {
-    if (this.practice.questionText === "") {
+    if (typeof this.practice === "undefined") {
       throw new PracticeNotFound("NOT_FOUND");
     }
 
-    const answerResult = this.practice.judgeAnswer(answer);
+    const answerResult = this.practice.getResult(answer);
 
     if (this.practice.canRetry && this.practice.mustRetry) {
       if (!answerResult.isPoor) {
@@ -72,12 +76,11 @@ class Scenario {
   }
 
   async sayAgain(): Promise<void> {
-    this.practice.speakSlowly();
-
-    if (this.practice.questionText === "") {
+    if (typeof this.practice === "undefined") {
       throw new PracticeNotFound("NOT_FOUND");
     }
 
+    this.practice.speakSlowly();
     this.addSpeech([new RandomResponse("ACCEPTED", 3)]);
     this.addQuestionText(this.practice.questionText);
   }
@@ -87,18 +90,18 @@ class Scenario {
   }
 
   private async setNewPractice(): Promise<void> {
-    const article = await this.practice.findArticleForNextPractice();
+    const article = await this.findArticleForNextPractice();
     this.practice = Practice.createByArticle(article);
-
-    if (this.practice.questionText === "") {
-      throw new PracticeNotFound("NOT_FOUND");
-    }
 
     this.incrementPracticeCount();
     this.addQuestionText(this.practice.questionText, article);
   }
 
   private addQuestionText(questionText: string, article?: Article) {
+    if (typeof this.practice === "undefined") {
+      throw new PracticeNotFound("NOT_FOUND");
+    }
+
     if (article instanceof Article && article.isFirstQuestionText) {
       this.addSpeech(
         [
@@ -161,6 +164,25 @@ class Scenario {
 
   private get isConfirmationPeriod(): boolean {
     return this.practiceCount % CONFIRMATION_INTERVAL === 0;
+  }
+
+  private async findArticleForNextPractice(): Promise<Article> {
+    try {
+      let article: Article;
+
+      if (typeof this.practice === "undefined") {
+        article = await ArticleStore.findOnePublishedBefore();
+      } else {
+        article = await ArticleStore.findOneIncludingNextQuestionText(
+          this.practice.articleId,
+          this.practice.questionText
+        );
+      }
+
+      return article;
+    } catch (error) {
+      throw error;
+    }
   }
 }
 
