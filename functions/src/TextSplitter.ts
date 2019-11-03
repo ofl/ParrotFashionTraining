@@ -54,6 +54,10 @@ const PREPOSITIONS: string[] = [
 ];
 
 export default class TextSplitter {
+  // 1. 文中に句読点や分割の境目となりうる単語(セパレーター)が含まれているか正規表現で確認する
+  // 2. 文中に含まれていたセパレーターごとにその位置で文を分割する
+  // 3. 分割した結果が適当でなかった場合は文を再結合(rejoinText())する
+  // 4. 分割された文章が適当な文の長さになるまで1~3を再帰的に実行する
   static execute(text: string): string[] {
     let array = this.textToArray(text);
     array = this.splitTextInArrayWithPunctuations(array, PUNCTUATIONS);
@@ -145,19 +149,20 @@ export default class TextSplitter {
   ): string[] {
     const punctuation = punctuations[depth];
 
-    if (punctuation == null || this.isShortEnough(text)) {
+    if (typeof punctuation === "undefined" || this.isShortEnough(text)) {
       return [text];
     }
     const array = this.splitTextWithPunctuation(text, punctuation);
 
     const result: string[] = [];
     array.forEach(splittedText => {
+      // 再帰呼び出し
       this.splitTextWithPunctuations(
         splittedText,
         punctuations,
         depth + 1
-      ).forEach(splittedSplittedText => {
-        result.push(splittedSplittedText);
+      ).forEach(recursivelySplittedText => {
+        result.push(recursivelySplittedText);
       });
     });
     return result;
@@ -170,19 +175,20 @@ export default class TextSplitter {
   ): string[] {
     const separator = arrayOfSeparators[depth];
 
-    if (separator == null || this.isShortEnough(text)) {
+    if (typeof separator === "undefined" || this.isShortEnough(text)) {
       return [text];
     }
     const array = this.splitTextWithSeparator(text, separator);
 
     const result: string[] = [];
     array.forEach(splittedText => {
+      // 再帰呼び出し
       this.splitTextWithArrayOfSeparators(
         splittedText,
         arrayOfSeparators,
         depth + 1
-      ).forEach(splittedSplittedText => {
-        result.push(splittedSplittedText);
+      ).forEach(recursivelySplittedText => {
+        result.push(recursivelySplittedText);
       });
     });
     return result;
