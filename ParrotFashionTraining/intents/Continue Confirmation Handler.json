@@ -1,0 +1,52 @@
+{
+  "id": "f0233983-f19e-4511-a3f3-b9f4072af72a",
+  "name": "Continue Confirmation Handler",
+  "auto": true,
+  "contexts": [
+    "continue_practice"
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "affectedContexts": [
+        {
+          "name": "continue_practice",
+          "parameters": {},
+          "lifespan": 3
+        }
+      ],
+      "parameters": [
+        {
+          "id": "7ef6500d-0cd1-4d0f-b18d-6358dd010d04",
+          "required": true,
+          "dataType": "@Boolean",
+          "name": "Boolean",
+          "value": "$Boolean",
+          "promptMessages": [],
+          "noMatchPromptMessages": [],
+          "noInputPromptMessages": [],
+          "outputDialogContexts": [],
+          "isList": false
+        }
+      ],
+      "messages": [
+        {
+          "type": 0,
+          "lang": "en",
+          "condition": "",
+          "speech": []
+        }
+      ],
+      "defaultResponsePlatforms": {},
+      "speech": []
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": [],
+  "conditionalResponses": [],
+  "condition": "",
+  "conditionalFollowupEvents": []
+}

@@ -1,0 +1,50 @@
+[
+  {
+    "id": "1a88d00a-43b5-4d6e-8848-5005982fd3b3",
+    "data": [
+      {
+        "text": "Once more please.",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "953cdb5b-8f16-4c21-94d8-814608f57ba6",
+    "data": [
+      {
+        "text": "Come again?",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "e9a75743-4a55-4fa8-83b0-a78de64e33dc",
+    "data": [
+      {
+        "text": "Pardon?",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "9b55f66d-5047-4031-871f-27f0e00b5111",
+    "data": [
+      {
+        "text": "Would you say it again?",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

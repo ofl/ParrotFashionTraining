@@ -1,0 +1,50 @@
+[
+  {
+    "id": "c77a9f88-b9f9-495b-bcde-4f1ec715fef5",
+    "data": [
+      {
+        "text": "Parrot like training",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 1,
+    "updated": 0
+  },
+  {
+    "id": "b92b4ede-9e24-4855-a7e3-753423108fcb",
+    "data": [
+      {
+        "text": "Parrot style training",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "0ad199d9-8548-4d84-956d-0c918ba9cef1",
+    "data": [
+      {
+        "text": "Parrot training",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "ea541dea-9072-404a-ae62-9a9ed3ecd8c4",
+    "data": [
+      {
+        "text": "Parrot fashion training",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

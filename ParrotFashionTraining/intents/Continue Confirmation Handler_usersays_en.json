@@ -1,0 +1,86 @@
+[
+  {
+    "id": "eaf369f8-0bc4-4f68-8aaa-4699b9d9cfe2",
+    "data": [
+      {
+        "text": "sure",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "9167c8ea-a03e-4a0b-8bff-2a038f99805e",
+    "data": [
+      {
+        "text": "false",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "907664d8-c614-40d4-bba0-205da2075054",
+    "data": [
+      {
+        "text": "true",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "daead604-4f32-4371-8c9f-9f60d0be19de",
+    "data": [
+      {
+        "text": "ok",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "147e15dd-82e0-47b5-8748-6b68730f8ba6",
+    "data": [
+      {
+        "text": "no",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 1,
+    "updated": 0
+  },
+  {
+    "id": "1f8e68d4-7688-4f8e-9056-263467219302",
+    "data": [
+      {
+        "text": "yes",
+        "alias": "Boolean",
+        "meta": "@Boolean",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

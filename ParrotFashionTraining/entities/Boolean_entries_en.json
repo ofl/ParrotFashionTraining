@@ -1,0 +1,24 @@
+[
+  {
+    "value": "true",
+    "synonyms": [
+      "true",
+      "yes",
+      "absolutely",
+      "agree",
+      "sure",
+      "please",
+      "ok",
+      "off course"
+    ]
+  },
+  {
+    "value": "false",
+    "synonyms": [
+      "false",
+      "no",
+      "never",
+      "no thank you"
+    ]
+  }
+]
