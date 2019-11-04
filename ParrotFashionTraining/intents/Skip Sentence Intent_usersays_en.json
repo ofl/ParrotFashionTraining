@@ -1,0 +1,86 @@
+[
+  {
+    "id": "2bf729d6-4a4c-45a4-a106-44ec9531b720",
+    "data": [
+      {
+        "text": "Go forward.",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "008d0569-21b7-4cc7-9432-0f0a5f01d9d7",
+    "data": [
+      {
+        "text": "I throw up my hands",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "b138f9d7-51bb-4031-9938-cb9802f5666d",
+    "data": [
+      {
+        "text": "Give up.",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "2a54ba8d-ac4a-401d-a2f1-1e541010fef2",
+    "data": [
+      {
+        "text": "Cancel this practice.",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "40a780db-ae7d-4cac-88ce-3274a5321bf7",
+    "data": [
+      {
+        "text": "Next sentence",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "3add7f94-25ae-4edf-981f-6779ce4a196c",
+    "data": [
+      {
+        "text": "I give up",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "df0504a5-0c1f-41dc-8a23-e53b028a04bf",
+    "data": [
+      {
+        "text": "Skip Sentence",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

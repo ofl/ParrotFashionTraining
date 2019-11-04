@@ -1,0 +1,56 @@
+[
+  {
+    "id": "5066a42e-623f-42a2-80bb-0c8cb43139c0",
+    "data": [
+      {
+        "text": "I love you.",
+        "alias": "answer",
+        "meta": "@sys.any",
+        "userDefined": true
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "547572ca-b8a4-42b9-ae54-7da7742eaa86",
+    "data": [
+      {
+        "text": "You said that, ",
+        "userDefined": false
+      },
+      {
+        "text": "I don\u0027t like you.",
+        "alias": "answer",
+        "meta": "@sys.any",
+        "userDefined": true
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "4366d4e7-44bf-426d-8e8a-1610272a222a",
+    "data": [
+      {
+        "text": "You said, ",
+        "userDefined": false
+      },
+      {
+        "text": "It rains again",
+        "alias": "answer",
+        "meta": "@sys.any",
+        "userDefined": true
+      },
+      {
+        "text": ".",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

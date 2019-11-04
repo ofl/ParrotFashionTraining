@@ -1,0 +1,53 @@
+{
+  "id": "7c396fa2-5cfd-4f61-ab98-7d447178a839",
+  "name": "User Answered Handler",
+  "auto": true,
+  "contexts": [
+    "waiting_answer"
+  ],
+  "responses": [
+    {
+      "resetContexts": false,
+      "action": "Replied",
+      "affectedContexts": [
+        {
+          "name": "waiting_answer",
+          "parameters": {},
+          "lifespan": 3
+        }
+      ],
+      "parameters": [
+        {
+          "id": "e657f4d0-fb88-48a4-8b63-fa4f72787113",
+          "required": false,
+          "dataType": "@sys.any",
+          "name": "answer",
+          "value": "$answer",
+          "promptMessages": [],
+          "noMatchPromptMessages": [],
+          "noInputPromptMessages": [],
+          "outputDialogContexts": [],
+          "isList": false
+        }
+      ],
+      "messages": [
+        {
+          "type": 0,
+          "lang": "en",
+          "condition": "",
+          "speech": []
+        }
+      ],
+      "defaultResponsePlatforms": {},
+      "speech": []
+    }
+  ],
+  "priority": 500000,
+  "webhookUsed": true,
+  "webhookForSlotFilling": false,
+  "fallbackIntent": false,
+  "events": [],
+  "conditionalResponses": [],
+  "condition": "",
+  "conditionalFollowupEvents": []
+}

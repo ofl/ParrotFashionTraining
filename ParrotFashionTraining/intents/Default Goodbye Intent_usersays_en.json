@@ -1,0 +1,62 @@
+[
+  {
+    "id": "e9272746-b1ca-415c-b694-3aaae06f4bb5",
+    "data": [
+      {
+        "text": "goodbye repeat after me",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "67402c3d-aaf7-472a-9622-6c732b9d314f",
+    "data": [
+      {
+        "text": "goodbye",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "719898ab-2b8d-4ece-bc74-c2a98c0683e7",
+    "data": [
+      {
+        "text": "stop",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "95193e02-5960-4176-b533-132ac2d9db01",
+    "data": [
+      {
+        "text": "exit",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "bb9e9786-860b-4bf0-ae50-0b09c4bbdaac",
+    "data": [
+      {
+        "text": "Good bye!",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]

@@ -8,6 +8,7 @@
         "pubsub",
         "splitted",
         "ssml",
-        "unixtime"
+        "unixtime",
+        "webhook"
     ]
 }

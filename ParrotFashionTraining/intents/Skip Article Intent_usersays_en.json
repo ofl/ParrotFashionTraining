@@ -1,0 +1,38 @@
+[
+  {
+    "id": "c5309c18-822d-49f0-bcea-7b30db0f96cc",
+    "data": [
+      {
+        "text": "Next article.",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "e8f1fbc4-df22-48b9-9330-e056cfadc756",
+    "data": [
+      {
+        "text": "I don\u0027t like this article",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  },
+  {
+    "id": "becb2d54-8563-474c-ab81-35943fc9bd3b",
+    "data": [
+      {
+        "text": "Skip this article",
+        "userDefined": false
+      }
+    ],
+    "isTemplate": false,
+    "count": 0,
+    "updated": 0
+  }
+]
