@@ -30,7 +30,9 @@ const Dictionary: { [key: string]: string } = {
   FROM: "from {{source}} {{fromNow}}",
   NOT_FOUND: "Current sentence not found",
   NOT_EXIST: "Articles for practice not found",
-  CONTINUE_PRACTICE: "Do you want to continue?"
+  CONTINUE_PRACTICE: "Do you want to continue?",
+  BYE_PRACTICE_CONFIRMATION:
+    "Are you sure want to stop Parrot fashion training?"
 };
 
 interface SpeechComponent {

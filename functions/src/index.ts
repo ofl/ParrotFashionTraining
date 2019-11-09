@@ -18,7 +18,8 @@ const app = dialogflow();
 
 const AppContexts = {
   WAITING_ANSWER: "waiting_answer",
-  CONTINUE_PRACTICE: "continue_practice"
+  CONTINUE_PRACTICE: "continue_practice",
+  STOP_PRACTICE: "stop_practice"
 };
 
 app.intent("Default Welcome Intent", async conv => {
@@ -81,11 +82,11 @@ app.intent("Say It Again Intent", async conv => {
   );
 });
 
-app.intent("Default Goodbye Intent", async conv => {
+app.intent("Stop Practice Intent", async conv => {
   await actScenario(
     conv,
     (scenario: Scenario): Promise<void> => {
-      return scenario.sayGoodBye();
+      return scenario.confirmStopPractice();
     }
   );
 });
@@ -108,13 +109,22 @@ app.intent("Continue Confirmation Handler", async (conv, { Boolean }) => {
   }
 });
 
-app.intent("Stop Practice Intent", async conv => {
-  await actScenario(
-    conv,
-    (scenario: Scenario): Promise<void> => {
-      return scenario.sayGoodBye();
-    }
-  );
+app.intent("Stop Confirmation Handler", async (conv, { Boolean }) => {
+  if (Boolean === "true") {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.sayGoodBye();
+      }
+    );
+  } else {
+    await actScenario(
+      conv,
+      (scenario: Scenario): Promise<void> => {
+        return scenario.skipArticle();
+      }
+    );
+  }
 });
 
 const actScenario = async (
@@ -147,8 +157,13 @@ const speak = (
         conv.close(speech.toSsml());
         break;
 
-      case EndStatus.Confirm:
+      case EndStatus.ConfirmContinue:
         conv.contexts.set(AppContexts.CONTINUE_PRACTICE, 1);
+        conv.ask(speech.toSsml());
+        break;
+
+      case EndStatus.ConfirmStop:
+        conv.contexts.set(AppContexts.STOP_PRACTICE, 1);
         conv.ask(speech.toSsml());
         break;
 

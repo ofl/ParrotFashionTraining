@@ -85,6 +85,13 @@ class Scenario {
     this.addQuestionText(this.practice.questionText);
   }
 
+  async confirmStopPractice(): Promise<void> {
+    this.addSpeech(
+      [new Break(), new Response(Dictionary["BYE_PRACTICE_CONFIRMATION"])],
+      EndStatus.ConfirmStop
+    );
+  }
+
   async sayGoodBye(): Promise<void> {
     this.addSpeech([new RandomResponse("BYE", 3)], EndStatus.Close);
   }
@@ -135,7 +142,7 @@ class Scenario {
         new Break(),
         new Response(Dictionary["CONTINUE_PRACTICE"])
       ],
-      EndStatus.Confirm
+      EndStatus.ConfirmContinue
     );
   }
 

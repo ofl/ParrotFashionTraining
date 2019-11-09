@@ -4,7 +4,8 @@ import SSML from "./SSML";
 enum EndStatus {
   Continue,
   WaitingAnswer,
-  Confirm,
+  ConfirmContinue,
+  ConfirmStop,
   Close
 }
 
