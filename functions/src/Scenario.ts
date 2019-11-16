@@ -11,7 +11,8 @@ import {
   RandomResponse,
   Credit,
   Quote,
-  Break
+  Break,
+  Audio
 } from "./SpeechComponent";
 
 const CONFIRMATION_INTERVAL = 10;
@@ -27,6 +28,10 @@ class Scenario {
   async welcome(): Promise<void> {
     this.addSpeech([
       new Response(Dictionary["WELCOME"]),
+      new Break(),
+      new Response(Dictionary["DESCRIPTION"]),
+      new Response(Dictionary["HOW_TO_USE"]),
+      new Break(),
       new RandomResponse("YELL", 3)
     ]);
 
@@ -119,7 +124,8 @@ class Scenario {
           new Break(),
           new Response(Dictionary["REPEAT_AFTER_ME"]),
           new Break(1.0),
-          new Quote(questionText, this.practice.speakingSpeedRate)
+          new Quote(questionText, this.practice.speakingSpeedRate),
+          new Audio(Dictionary["BEEP_SOUND_URL"], "BEEP!!")
         ],
         EndStatus.WaitingAnswer
       );
@@ -127,7 +133,8 @@ class Scenario {
       this.addSpeech(
         [
           new Break(1.0),
-          new Quote(questionText, this.practice.speakingSpeedRate)
+          new Quote(questionText, this.practice.speakingSpeedRate),
+          new Audio(Dictionary["BEEP_SOUND_URL"], "BEEP!!")
         ],
         EndStatus.WaitingAnswer
       );

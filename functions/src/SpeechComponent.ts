@@ -4,6 +4,8 @@ const moment = require("moment");
 
 const Dictionary: { [key: string]: string } = {
   WELCOME: "Welcome to Parrot Fashion Training.",
+  DESCRIPTION: "This application reads short sentences from English news.",
+  HOW_TO_USE: "Please repeat it, after beep sound.",
   BYE_1: "Goodbye.",
   BYE_2: "Bye.",
   BYE_3: "See you again.",
@@ -32,7 +34,8 @@ const Dictionary: { [key: string]: string } = {
   NOT_EXIST: "Articles for practice not found",
   CONTINUE_PRACTICE: "Do you want to continue?",
   BYE_PRACTICE_CONFIRMATION:
-    "Are you sure want to stop Parrot fashion training?"
+    "Are you sure want to stop Parrot fashion training?",
+  BEEP_SOUND_URL: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
 };
 
 interface SpeechComponent {
@@ -115,6 +118,18 @@ class Break implements SpeechComponent {
   }
 }
 
+class Audio implements SpeechComponent {
+  constructor(public src: string, public alt: string) {}
+
+  toSsml(): string {
+    return SSML.audio(this.src, this.alt);
+  }
+
+  toText(): string {
+    return this.alt;
+  }
+}
+
 export {
   SpeechComponent,
   Dictionary,
@@ -122,5 +137,6 @@ export {
   RandomResponse,
   Credit,
   Quote,
-  Break
+  Break,
+  Audio
 };
