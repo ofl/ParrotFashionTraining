@@ -156,13 +156,13 @@ class Scenario {
   private addResultResponse(result: AnswerResult) {
     const response: RandomResponse = (() => {
       if (result.isExcellent) {
-        return new RandomResponse("EXCELLENT", 2);
+        return new RandomResponse("EXCELLENT", 4);
       } else if (result.isGood) {
-        return new RandomResponse("GOOD", 3);
+        return new RandomResponse("GOOD", 5);
       } else if (result.isRegrettable) {
-        return new RandomResponse("REGRETTABLE", 2);
+        return new RandomResponse("REGRETTABLE", 3);
       } else {
-        return new RandomResponse("POOR", 2);
+        return new RandomResponse("POOR", 7);
       }
     })();
     this.addSpeech([response]);
