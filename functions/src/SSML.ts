@@ -1,6 +1,6 @@
 export default class SSML {
   static enclose(text: string): string {
-    return `<speak><p>${text}</p></speak>`;
+    return `<speak>${text}</speak>`;
   }
 
   static encloseContent(message: string): string {
@@ -13,5 +13,9 @@ export default class SSML {
 
   static break(time: number = 0.5): string {
     return `<break time="${time}s" />`;
+  }
+
+  static audio(src: string, alt: string): string {
+    return `<audio src="${src}">${alt}</audio>`;
   }
 }
