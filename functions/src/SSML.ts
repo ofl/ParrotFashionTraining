@@ -4,11 +4,11 @@ export default class SSML {
   }
 
   static encloseContent(message: string): string {
-    return `<s>${message}</s>`;
+    return `<s>${message} </s>`;
   }
 
-  static encloseQuote(questionText: string, rate: string): string {
-    return `<s><prosody rate="${rate}">${questionText}</prosody></s>`;
+  static encloseTextWithSpeedRate(questionText: string, rate: number): string {
+    return `<s><prosody rate="${rate}%">${questionText} </prosody></s>`;
   }
 
   static break(time: number = 0.5): string {
