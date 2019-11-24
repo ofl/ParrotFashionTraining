@@ -2,6 +2,7 @@ import { DocumentData } from "@google-cloud/firestore";
 import * as moment from "moment";
 import Utils from "./Utils";
 import TextSplitter from "./TextSplitter";
+import ContentsFilter from "./ContentsFilter";
 
 const NEWS_SOURCES: { [key: string]: string } = {
   "nytimes.com": "New York Times",
@@ -36,6 +37,7 @@ export default class Article {
 
     return articles
       .filter(article => !article.isTooOld())
+      .filter(article => !article.isIncludingSensitiveContents())
       .filter(article => !article.hasTooManyWordInSentence());
   }
 
@@ -118,5 +120,9 @@ export default class Article {
       .unix();
 
     return this.unixtime < daysFromNow;
+  }
+
+  isIncludingSensitiveContents(): boolean {
+    return ContentsFilter.isIncludingNGWords(this.title + this.body);
   }
 }
