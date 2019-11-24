@@ -52,12 +52,9 @@ interface SpeechComponent {
 }
 
 class Response implements SpeechComponent {
-  constructor(public text: string = "") {}
+  constructor(private text: string = "") {}
 
   toSsml(): string {
-    if (this.text === "") {
-      return "";
-    }
     return SSML.encloseContent(this.text);
   }
 
@@ -67,46 +64,55 @@ class Response implements SpeechComponent {
 }
 
 class RandomResponse implements SpeechComponent {
-  constructor(public keyword: string = "", public length: number) {}
+  private text: string;
+
+  constructor(keyword: string = "", length: number) {
+    this.text =
+      keyword === "" ? "" : Dictionary[Utils.randomMessage(keyword, length)];
+  }
 
   toSsml(): string {
-    if (this.keyword === "") {
-      return "";
-    }
-    return SSML.encloseContent(
-      Dictionary[Utils.randomMessage(this.keyword, this.length)]
-    );
+    return SSML.encloseContent(this.text);
   }
 
   toText(): string {
-    if (this.keyword === "") {
-      return "";
-    }
-    return Dictionary[Utils.randomMessage(this.keyword, this.length)];
+    return this.text;
   }
 }
 
 class Credit implements SpeechComponent {
-  constructor(public publisher: string, public unixtime: number) {}
+  private text: string;
+
+  constructor(publisher: string, unixtime: number) {
+    const fromNow = moment.unix(unixtime).fromNow();
+    this.text = `from ${publisher} ${fromNow}. `;
+  }
 
   toSsml(): string {
-    return SSML.encloseContent(this.toText());
+    return SSML.encloseContent(this.text);
   }
 
   toText(): string {
-    const fromNow = moment.unix(this.unixtime).fromNow();
-    return `from ${this.publisher} ${fromNow}.`;
+    return this.text;
   }
 }
 
 class Quote implements SpeechComponent {
   constructor(
-    public text: string = "",
-    public speakingSpeedRate: number = 100
+    private text: string = "",
+    private speakingSpeedRate: number = 100
   ) {}
 
   toSsml(): string {
-    return SSML.encloseQuote(`"${this.text}"`, `${this.speakingSpeedRate}%`);
+    return SSML.encloseTextWithSpeedRate(
+      `"${this.text}" `,
+      this.speakingSpeedRate
+    );
+  }
+
+  toText(): string {
+    return `"${this.text}" `;
+  }
 }
 
 class Result implements SpeechComponent {
@@ -121,12 +127,22 @@ class Result implements SpeechComponent {
   }
 
   toText(): string {
-    return `"${this.text}"`;
+    return this.text;
+  }
+
+  private get speakingSpeedRate(): number {
+    if (this.answerResult.isPoor) {
+      return 100;
+    }
+
+    return this.answerResult.similarity > 50
+      ? this.answerResult.similarity
+      : 50;
   }
 }
 
 class Break implements SpeechComponent {
-  constructor(public time: number = 0.5) {}
+  constructor(private time: number = 0.5) {}
 
   toSsml(): string {
     return SSML.break(this.time);
@@ -138,7 +154,7 @@ class Break implements SpeechComponent {
 }
 
 class Audio implements SpeechComponent {
-  constructor(public src: string, public alt: string) {}
+  constructor(private src: string, private alt: string) {}
 
   toSsml(): string {
     return SSML.audio(this.src, this.alt);
