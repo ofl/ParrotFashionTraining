@@ -7,7 +7,8 @@ const NEWS_SOURCES: { [key: string]: string } = {
   "nytimes.com": "New York Times",
   "cnn.com": "CNN",
   "reuters.com": "Reuters",
-  "bbc.co.uk": "BBC"
+  "bbc.co.uk": "BBC",
+  "news.com.au": "News.com.au"
 };
 const MAX_WORD_COUNT_IN_SENTENCE = 9;
 const DAYS_BEFORE = 9;

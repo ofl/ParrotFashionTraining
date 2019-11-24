@@ -22,11 +22,6 @@ const SOURCES: string[] = [
   "http://feeds.bbci.co.uk/news/science_and_environment/rss.xml",
   "http://feeds.bbci.co.uk/news/technology/rss.xml",
   "http://feeds.bbci.co.uk/news/entertainment_and_arts/rss.xml",
-  "http://feeds.bbci.co.uk/news/uk/rss.xml",
-  "http://feeds.bbci.co.uk/news/uk/rss.xml",
-  "http://feeds.bbci.co.uk/news/uk/rss.xml",
-  "http://feeds.bbci.co.uk/news/uk/rss.xml",
-  "http://feeds.bbci.co.uk/news/uk/rss.xml",
   "http://feeds.reuters.com/news/artsculture",
   "http://feeds.reuters.com/reuters/businessNews",
   "http://feeds.reuters.com/reuters/companyNews",
@@ -44,7 +39,14 @@ const SOURCES: string[] = [
   "http://feeds.reuters.com/reuters/technologyNews",
   "http://feeds.reuters.com/reuters/topNews",
   "http://feeds.reuters.com/Reuters/domesticNews",
-  "http://feeds.reuters.com/Reuters/worldNews"
+  "http://feeds.reuters.com/Reuters/worldNews",
+  "https://www.news.com.au/content-feeds/latest-news-national/",
+  "https://www.news.com.au/content-feeds/latest-news-entertainment/",
+  "https://www.news.com.au/content-feeds/latest-news-world/",
+  "https://www.news.com.au/content-feeds/latest-news-technology/",
+  "https://www.news.com.au/content-feeds/latest-news-lifestyle/",
+  "https://www.news.com.au/content-feeds/latest-news-travel/",
+  "https://www.news.com.au/content-feeds/latest-news-sport/"
 ];
 
 export default class Batch {
