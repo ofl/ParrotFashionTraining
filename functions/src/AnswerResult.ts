@@ -5,7 +5,7 @@ const GOOD_LEVEL: number = 85;
 const PERFECT_LEVEL: number = 95;
 
 export default class AnswerResult {
-  constructor(private similarity: number) {}
+  constructor(public similarity: number) {}
 
   static get(questionText: string, answerText: string): AnswerResult {
     return new AnswerResult(this.textSimilarity(questionText, answerText));
@@ -39,6 +39,18 @@ export default class AnswerResult {
         return word.toLowerCase();
       })
       .join(" ");
+  }
+
+  get keyword(): string {
+    if (this.isExcellent) {
+      return "EXCELLENT";
+    } else if (this.isRegrettable) {
+      return "REGRETTABLE";
+    } else if (this.isRegrettable) {
+      return "GOOD";
+    } else {
+      return "POOR";
+    }
   }
 
   get isPoor(): boolean {

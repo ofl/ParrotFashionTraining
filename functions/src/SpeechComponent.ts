@@ -1,5 +1,6 @@
 import SSML from "./SSML";
 import Utils from "./Utils";
+import AnswerResult from "./AnswerResult";
 const moment = require("moment");
 
 const Dictionary: { [key: string]: string } = {
@@ -19,22 +20,19 @@ const Dictionary: { [key: string]: string } = {
   EXCELLENT_1: "Perfect!",
   EXCELLENT_2: "Excellent!",
   EXCELLENT_3: "Great!",
-  EXCELLENT_4: "Amazing!",
   GOOD_1: "OK!",
   GOOD_2: "Good job!",
   GOOD_3: "Well done!",
-  GOOD_4: "Nice!",
-  GOOD_5: "Fine!",
   REGRETTABLE_1: "So close!",
   REGRETTABLE_2: "Almost had it!",
   REGRETTABLE_3: "Nearly there!",
   POOR_1: "Don't mind!",
-  POOR_2: "Don’t worry!",
-  POOR_3: "Never mind!",
-  POOR_4: "Let's do your best next time!",
-  POOR_5: "You have a next time!",
-  POOR_6: "You can do it!",
-  POOR_7: "Hang in there!",
+  POOR_2: "Never mind!",
+  POOR_3: "Let's do your best next time!",
+  EXCELLENT: "Alright!",
+  GOOD: "OK!",
+  REGRETTABLE: "So close!",
+  POOR: "Don't mind!",
   SKIP_QUESTION_TEXT: "Let's start next sentence.",
   SKIP_ARTICLE: "Let's start next article.",
   INTRODUCTION: "The title of the next article is",
@@ -109,6 +107,17 @@ class Quote implements SpeechComponent {
 
   toSsml(): string {
     return SSML.encloseQuote(`"${this.text}"`, `${this.speakingSpeedRate}%`);
+}
+
+class Result implements SpeechComponent {
+  private text: string;
+
+  constructor(private answerResult: AnswerResult) {
+    this.text = Dictionary[Utils.randomMessage(answerResult.keyword, 3)];
+  }
+
+  toSsml(): string {
+    return SSML.encloseTextWithSpeedRate(this.text, this.speakingSpeedRate);
   }
 
   toText(): string {
@@ -147,6 +156,7 @@ export {
   RandomResponse,
   Credit,
   Quote,
+  Result,
   Break,
   Audio
 };

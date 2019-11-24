@@ -1,4 +1,3 @@
-import AnswerResult from "./AnswerResult";
 import Article from "./Article";
 import ArticleStore from "./ArticleStore";
 import { PracticeNotFound } from "./errors";
@@ -11,6 +10,7 @@ import {
   RandomResponse,
   Credit,
   Quote,
+  Result,
   Break,
   Audio
 } from "./SpeechComponent";
@@ -47,11 +47,11 @@ class Scenario {
 
     if (this.practice.canRetry && this.practice.mustRetry) {
       if (!answerResult.isPoor) {
-        this.addResultResponse(answerResult);
+        this.addSpeech([new Result(answerResult)]);
       }
       this.addQuestionText(this.practice.questionText);
     } else {
-      this.addResultResponse(answerResult);
+      this.addSpeech([new Result(answerResult)]);
 
       if (this.isConfirmationPeriod) {
         this.addConfirmation();
@@ -151,21 +151,6 @@ class Scenario {
       ],
       EndStatus.ConfirmContinue
     );
-  }
-
-  private addResultResponse(result: AnswerResult) {
-    const response: RandomResponse = (() => {
-      if (result.isExcellent) {
-        return new RandomResponse("EXCELLENT", 4);
-      } else if (result.isGood) {
-        return new RandomResponse("GOOD", 5);
-      } else if (result.isRegrettable) {
-        return new RandomResponse("REGRETTABLE", 3);
-      } else {
-        return new RandomResponse("POOR", 7);
-      }
-    })();
-    this.addSpeech([response]);
   }
 
   private incrementPracticeCount() {
